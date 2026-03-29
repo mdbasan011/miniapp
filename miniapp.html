@@ -5,2194 +5,1496 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Bon Service 👹</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0f0f;
-    --card: #1a1a1a;
-    --card2: #222222;
-    --border: #2e2e2e;
-    --accent: #4f8ef7;
-    --accent2: #3a6fd8;
-    --text: #e8e8e8;
-    --text2: #999;
-    --green: #4caf72;
-    --red: #e05252;
-    --gold: #d4a843;
-    --radius: 12px;
-    --radius-sm: 8px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
-  body { overflow-x: hidden; }
+:root {
+  --bg:      #06090d;
+  --bg2:     #0c1219;
+  --bg3:     #111c26;
+  --border:  #1a2a3a;
+  --red:     #ff2d2d;
+  --orange:  #ff6b00;
+  --cyan:    #00d4ff;
+  --green:   #00ff88;
+  --yellow:  #ffd600;
+  --text:    #c8dae8;
+  --text2:   #56788a;
+  --mono:    'Share Tech Mono', monospace;
+  --title:   'Orbitron', sans-serif;
+  --body:    'Rajdhani', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-  /* ── BLOCKED SCREEN ── */
-  #blocked-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100vh; text-align: center; padding: 24px;
-    background: #0f0f0f;
-  }
-  #blocked-screen h2 { font-size: 18px; color: var(--text2); margin-top: 12px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 15px;
+}
 
-  /* ── MAIN APP ── */
-  #app { display: none; flex-direction: column; height: 100vh; }
+/* Grid BG */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    linear-gradient(rgba(0,212,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events:none;
+}
 
-  /* ── HEADER ── */
-  .header {
-    background: var(--card); border-bottom: 1px solid var(--border);
-    padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-  }
-  .header-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: var(--accent);
-    display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
-  .header-info { flex: 1; min-width: 0; }
-  .header-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .header-sub { font-size: 12px; color: var(--text2); }
-  .header-badge {
-    font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap;
-  }
-  .badge-vip { background: rgba(212,168,67,0.2); color: var(--gold); }
-  .badge-free { background: rgba(153,153,153,0.15); color: var(--text2); }
-  .badge-admin { background: rgba(79,142,247,0.2); color: var(--accent); }
+/* Glow corners */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(255,45,45,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(0,212,255,.08) 0%, transparent 50%);
+  pointer-events:none;
+}
 
-  /* ── SCROLL AREA ── */
-  .scroll-area { flex: 1; overflow-y: auto; padding: 12px 12px 80px; -webkit-overflow-scrolling: touch; }
+#app { position:relative; z-index:1; }
 
-  /* ── BOTTOM NAV ── */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-    background: var(--card); border-top: 1px solid var(--border);
-    display: flex; padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-  .nav-item {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 8px 4px; cursor: pointer; transition: color 0.15s; color: var(--text2);
-    border: none; background: none; font-size: 10px; gap: 3px;
-  }
-  .nav-item.active { color: var(--accent); }
-  .nav-item .nav-icon { font-size: 20px; line-height: 1; }
-  .nav-item span { font-size: 10px; }
+/* ── BLOCKED SCREEN ── */
+#blocked {
+  display:none;
+  position:fixed; inset:0;
+  background: #000;
+  z-index:9999;
+}
 
-  /* ── PAGES ── */
-  .page { display: none; }
-  .page.active { display: block; }
+/* ── LOADING ── */
+#loading {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  gap:16px;
+}
+.loader-ring {
+  width:60px; height:60px;
+  border:3px solid var(--border);
+  border-top-color: var(--red);
+  border-radius:50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loader-text {
+  font-family: var(--mono);
+  color: var(--text2);
+  font-size:12px;
+  letter-spacing:2px;
+  animation: blink 1.2s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
 
-  /* ── CARD ── */
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 14px; margin-bottom: 10px;
-  }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-  .card-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
-  .card-row:last-child { border-bottom: none; }
-  .card-row-label { color: var(--text2); font-size: 13px; }
-  .card-row-value { font-size: 13px; font-weight: 500; text-align: right; }
+/* ── HEADER ── */
+.header {
+  padding:16px;
+  border-bottom:1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,45,45,.06) 0%, transparent 100%);
+  position:sticky; top:0; z-index:100;
+  backdrop-filter: blur(12px);
+}
+.header-inner {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  max-width:480px;
+  margin:0 auto;
+}
+.logo {
+  font-family: var(--title);
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:2px;
+  background: linear-gradient(90deg, var(--red), var(--orange));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.user-badge {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background: var(--bg3);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:5px 12px 5px 5px;
+  font-size:12px;
+}
+.user-avatar {
+  width:24px; height:24px;
+  background: linear-gradient(135deg, var(--red), var(--orange));
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:700;
+  color:#fff;
+}
+.user-name { color:var(--text); font-weight:600; font-size:12px; }
 
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 16px; border-radius: var(--radius-sm); border: none; cursor: pointer;
-    font-size: 14px; font-weight: 600; transition: opacity 0.15s, transform 0.1s; width: 100%; margin-top: 8px;
-  }
-  .btn:active { transform: scale(0.97); opacity: 0.85; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-success { background: var(--green); color: #fff; }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-gold { background: var(--gold); color: #0f0f0f; }
-  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-  .btn-sm { padding: 7px 12px; font-size: 13px; margin-top: 6px; }
-  .btn-row { display: flex; gap: 8px; }
-  .btn-row .btn { flex: 1; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* ── NAV TABS ── */
+.nav {
+  display:flex;
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+  scrollbar-width:none;
+  position:sticky;
+  top:57px;
+  z-index:99;
+  background: var(--bg);
+}
+.nav::-webkit-scrollbar { display:none; }
+.nav-btn {
+  flex:none;
+  padding:12px 18px;
+  font-family: var(--body);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.5px;
+  color:var(--text2);
+  background:none;
+  border:none;
+  cursor:pointer;
+  white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:.2s;
+}
+.nav-btn.active {
+  color:var(--red);
+  border-bottom-color:var(--red);
+}
+.nav-btn:hover { color:var(--text); }
 
-  /* ── INPUT ── */
-  .input-group { margin-bottom: 10px; }
-  .input-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; }
-  input[type=text], input[type=password], textarea, select {
-    width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 10px 12px; color: var(--text); font-size: 14px; outline: none;
-    transition: border-color 0.15s;
-  }
-  input[type=text]:focus, input[type=password]:focus, textarea:focus, select:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+/* ── CONTENT ── */
+.content {
+  max-width:480px;
+  margin:0 auto;
+  padding:16px;
+}
+.page { display:none; animation: fadeUp .3s ease; }
+.page.active { display:block; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
 
-  /* ── RESULT BOX ── */
-  .result-box {
-    background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 12px; margin-top: 10px; font-family: 'Courier New', monospace; font-size: 12px;
-    line-height: 1.6; white-space: pre-wrap; word-break: break-all; display: none;
-    max-height: 300px; overflow-y: auto;
-  }
-  .result-box.visible { display: block; }
-  .result-ok { color: var(--green); }
-  .result-err { color: var(--red); }
+/* ── CARD ── */
+.card {
+  background: var(--bg2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:12px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--red), transparent);
+}
+.card-title {
+  font-family: var(--mono);
+  font-size:11px;
+  color:var(--text2);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.card-title::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background: var(--border);
+}
 
-  /* ── LOADING ── */
-  .loading-spin {
-    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── PROFILE CARD ── */
+.profile-hero {
+  background: linear-gradient(135deg, var(--bg3), var(--bg2));
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:12px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.profile-hero::before {
+  content:'';
+  position:absolute;
+  top:-30px; left:50%;
+  transform:translateX(-50%);
+  width:120px; height:60px;
+  background: var(--red);
+  filter:blur(40px);
+  opacity:.3;
+}
+.profile-avatar {
+  width:64px; height:64px;
+  background: linear-gradient(135deg, var(--red), var(--orange));
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  margin:0 auto 12px;
+  box-shadow: 0 0 24px rgba(255,45,45,.4);
+}
+.profile-name {
+  font-family: var(--title);
+  font-size:16px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.profile-id {
+  font-family: var(--mono);
+  font-size:11px;
+  color:var(--text2);
+}
+.vip-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background: linear-gradient(90deg, rgba(255,214,0,.15), rgba(255,107,0,.1));
+  border:1px solid rgba(255,214,0,.3);
+  border-radius:20px;
+  padding:4px 12px;
+  font-size:12px;
+  font-weight:700;
+  color:var(--yellow);
+  margin-top:10px;
+}
+.no-vip-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background: rgba(255,45,45,.1);
+  border:1px solid rgba(255,45,45,.2);
+  border-radius:20px;
+  padding:4px 12px;
+  font-size:12px;
+  color:var(--red);
+  margin-top:10px;
+}
 
-  /* ── TOAST ── */
-  #toast {
-    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: #2a2a2a; color: var(--text); padding: 9px 18px; border-radius: 20px;
-    font-size: 13px; z-index: 999; opacity: 0; transition: all 0.25s; pointer-events: none;
-    white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* STATS GRID */
+.stats-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:12px;
+}
+.stat-box {
+  background: var(--bg3);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px;
+  text-align:center;
+}
+.stat-val {
+  font-family: var(--mono);
+  font-size:22px;
+  font-weight:700;
+  color:var(--cyan);
+  display:block;
+}
+.stat-label {
+  font-size:11px;
+  color:var(--text2);
+  margin-top:2px;
+  letter-spacing:.5px;
+}
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200;
-    display: none; align-items: flex-end; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-box {
-    background: var(--card); border-radius: var(--radius) var(--radius) 0 0;
-    padding: 20px 16px 32px; width: 100%; max-height: 80vh; overflow-y: auto;
-    animation: slideUp 0.25s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
-  .modal-close { float: right; background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; margin-top: -4px; }
+/* ROW INFO */
+.info-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.info-row:last-child { border-bottom:none; }
+.info-label { color:var(--text2); }
+.info-val { font-family:var(--mono); font-size:13px; }
+.info-val.green { color:var(--green); }
+.info-val.red   { color:var(--red); }
+.info-val.yellow{ color:var(--yellow); }
+.info-val.cyan  { color:var(--cyan); }
 
-  /* ── SECTION TITLE ── */
-  .section-title { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 8px; }
+/* ── BUTTON ── */
+.btn {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  padding:13px;
+  border-radius:10px;
+  border:none;
+  font-family: var(--body);
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  letter-spacing:.5px;
+  transition:.2s;
+  margin-bottom:10px;
+}
+.btn:active { transform:scale(.97); }
+.btn-primary {
+  background: linear-gradient(90deg, var(--red), var(--orange));
+  color:#fff;
+  box-shadow: 0 4px 20px rgba(255,45,45,.3);
+}
+.btn-secondary {
+  background: var(--bg3);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-cyan {
+  background: linear-gradient(90deg, rgba(0,212,255,.2), rgba(0,212,255,.1));
+  color:var(--cyan);
+  border:1px solid rgba(0,212,255,.3);
+}
+.btn-green {
+  background: linear-gradient(90deg, rgba(0,255,136,.15), rgba(0,255,136,.05));
+  color:var(--green);
+  border:1px solid rgba(0,255,136,.2);
+}
+.btn-yellow {
+  background: linear-gradient(90deg, rgba(255,214,0,.15), rgba(255,107,0,.1));
+  color:var(--yellow);
+  border:1px solid rgba(255,214,0,.2);
+}
+.btn-red {
+  background: rgba(255,45,45,.1);
+  color:var(--red);
+  border:1px solid rgba(255,45,45,.2);
+}
 
-  /* ── KEY CARD ── */
-  .key-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s;
-  }
-  .key-card:hover { border-color: var(--accent); }
-  .key-label { font-weight: 600; font-size: 15px; }
-  .key-meta { font-size: 12px; color: var(--text2); margin-top: 3px; }
-  .key-price { font-size: 16px; font-weight: 700; color: var(--gold); float: right; }
+/* ── INPUT ── */
+.input-group { margin-bottom:12px; }
+.input-label {
+  display:block;
+  font-size:12px;
+  color:var(--text2);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+  font-family:var(--mono);
+}
+.input {
+  width:100%;
+  background: var(--bg3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 14px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:13px;
+  outline:none;
+  transition:.2s;
+}
+.input:focus {
+  border-color:var(--cyan);
+  box-shadow: 0 0 0 2px rgba(0,212,255,.1);
+}
+.input::placeholder { color:var(--text2); }
 
-  /* ── STATUS DOT ── */
-  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
-  .dot-green { background: var(--green); }
-  .dot-red { background: var(--red); }
-  .dot-yellow { background: var(--gold); }
+/* ── SHOP CARDS ── */
+.shop-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.shop-card {
+  background: var(--bg3);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  transition:.2s;
+}
+.shop-card:hover { border-color:var(--red); }
+.shop-card.popular { border-color:rgba(255,214,0,.4); }
+.shop-card.popular::before {
+  content:'HOT';
+  position:absolute;
+  top:8px; right:-12px;
+  background:var(--yellow);
+  color:#000;
+  font-size:9px;
+  font-weight:900;
+  padding:2px 20px;
+  transform:rotate(45deg) translateX(0);
+  letter-spacing:1px;
+}
+.shop-price {
+  font-family:var(--mono);
+  font-size:18px;
+  font-weight:700;
+  color:var(--red);
+  margin-bottom:2px;
+}
+.shop-label {
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.shop-desc {
+  font-size:11px;
+  color:var(--text2);
+}
+.shop-buy-btn {
+  display:block;
+  width:100%;
+  margin-top:10px;
+  padding:8px;
+  background: linear-gradient(90deg,var(--red),var(--orange));
+  border:none;
+  border-radius:6px;
+  color:#fff;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  transition:.2s;
+}
+.shop-buy-btn:disabled {
+  background: var(--border);
+  color:var(--text2);
+  cursor:not-allowed;
+}
 
-  /* ── ADMIN TOGGLE ── */
-  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .toggle-row:last-child { border-bottom: none; }
-  .toggle-label { font-size: 14px; }
-  .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 24px; transition: 0.2s;
-  }
-  .toggle-slider::before {
-    content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px;
-    background: #fff; border-radius: 50%; transition: 0.2s;
-  }
-  input:checked + .toggle-slider { background: var(--accent); }
-  input:checked + .toggle-slider::before { transform: translateX(20px); }
+/* ── TOAST ── */
+#toast {
+  position:fixed;
+  bottom:80px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background: var(--bg3);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 20px;
+  font-size:13px;
+  font-family:var(--mono);
+  color:var(--text);
+  opacity:0;
+  transition:.3s;
+  z-index:9999;
+  white-space:nowrap;
+  pointer-events:none;
+}
+#toast.show {
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
 
-  /* ── INFO ROW ── */
-  .info-banner {
-    background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.3);
-    border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; margin-bottom: 10px;
-  }
+/* ── ADMIN PANEL ── */
+.admin-stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+.admin-stat {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 8px;
+  text-align:center;
+}
+.admin-stat-val {
+  font-family:var(--mono);
+  font-size:20px;
+  font-weight:700;
+  color:var(--cyan);
+}
+.admin-stat-label {
+  font-size:10px;
+  color:var(--text2);
+  margin-top:2px;
+  letter-spacing:.5px;
+}
 
-  /* ── STAT GRID ── */
-  .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
-  .stat-item {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 12px; text-align: center;
-  }
-  .stat-val { font-size: 22px; font-weight: 700; }
-  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+/* TOGGLE */
+.toggle-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom:none; }
+.toggle-label { font-size:14px; font-weight:600; }
+.toggle-desc { font-size:11px; color:var(--text2); margin-top:2px; }
+.toggle {
+  position:relative;
+  width:44px; height:24px;
+  flex-shrink:0;
+}
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0;
+  background:var(--border);
+  border-radius:12px;
+  cursor:pointer;
+  transition:.3s;
+}
+.toggle-slider::before {
+  content:'';
+  position:absolute;
+  width:18px; height:18px;
+  left:3px; top:3px;
+  background:#fff;
+  border-radius:50%;
+  transition:.3s;
+}
+.toggle input:checked + .toggle-slider { background:var(--red); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(20px); }
 
-  /* ── TABS ── */
-  .tab-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
-  .tab-btn {
-    padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
-    background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; white-space: nowrap;
-    transition: all 0.15s;
-  }
-  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  display:flex;
+  z-index:100;
+  backdrop-filter:blur(12px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-btn {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:10px 4px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  color:var(--text2);
+  font-size:10px;
+  font-family:var(--body);
+  font-weight:600;
+  letter-spacing:.5px;
+  transition:.2s;
+  gap:4px;
+}
+.bottom-btn.active { color:var(--red); }
+.bottom-btn svg { width:20px; height:20px; }
+.bottom-icon { font-size:20px; line-height:1; }
 
-  /* ── ADMIN ── */
-  .admin-login-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300;
-    display: none; align-items: center; justify-content: center; padding: 20px;
-  }
-  .admin-login-overlay.open { display: flex; }
-  .admin-login-box {
-    background: var(--card); border-radius: var(--radius); padding: 24px;
-    width: 100%; max-width: 340px; border: 1px solid var(--border);
-  }
+.spacer { height:80px; }
 
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* ── EVENT CARD ── */
+.event-card {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+.event-card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--yellow),transparent);
+}
+.event-title { font-size:16px; font-weight:700; margin-bottom:4px; }
+.event-desc { font-size:13px; color:var(--text2); margin-bottom:10px; }
+.event-reward {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,214,0,.1);
+  border:1px solid rgba(255,214,0,.2);
+  border-radius:20px;
+  padding:3px 10px;
+  font-size:12px;
+  color:var(--yellow);
+  margin-bottom:10px;
+}
 
-  /* ── INLINE RESULT ── */
-  .inline-result { margin-top: 10px; }
+/* Section title */
+.section-title {
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text2);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
 
-  /* ── VIP EXPIRE BAR ── */
-  .expire-bar { background: var(--card2); border-radius: 4px; height: 6px; margin-top: 6px; overflow: hidden; }
-  .expire-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.5s; }
+/* Chip */
+.chip {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+}
+.chip-green { background:rgba(0,255,136,.1); color:var(--green); border:1px solid rgba(0,255,136,.2); }
+.chip-red   { background:rgba(255,45,45,.1);  color:var(--red);   border:1px solid rgba(255,45,45,.2); }
+.chip-cyan  { background:rgba(0,212,255,.1);  color:var(--cyan);  border:1px solid rgba(0,212,255,.2); }
 
-  /* ── COPY BTN ── */
-  .copy-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 8px; color: var(--text2); font-size: 11px; cursor: pointer; margin-left: 6px; }
+/* ── ADMIN LOGIN ── */
+.admin-login-wrap {
+  min-height:50vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  padding:20px;
+}
+.admin-icon {
+  font-size:48px;
+  filter:drop-shadow(0 0 20px rgba(255,45,45,.5));
+}
 
-  /* ── HR ── */
-  hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
-
-  /* ── KEY LIST ITEM ── */
-  .list-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-  }
-  .list-item:last-child { border-bottom: none; }
-  .list-item-main { flex: 1; min-width: 0; }
-  .list-item-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .list-item-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .list-item-badge { font-size: 11px; padding: 3px 7px; border-radius: 10px; white-space: nowrap; margin-left: 8px; flex-shrink: 0; }
-  .badge-green { background: rgba(76,175,114,0.2); color: var(--green); }
-  .badge-red { background: rgba(224,82,82,0.2); color: var(--red); }
-  .badge-gold { background: rgba(212,168,67,0.2); color: var(--gold); }
-
-  /* ─── VIP page fix ─── */
-  .vip-card-big {
-    background: linear-gradient(135deg, #1c2a45 0%, #1a1a1a 100%);
-    border: 1px solid rgba(79,142,247,0.3); border-radius: var(--radius);
-    padding: 20px; margin-bottom: 12px; text-align: center;
-  }
-  .vip-card-big .vip-icon { font-size: 40px; margin-bottom: 8px; }
-  .vip-card-big .vip-status { font-size: 20px; font-weight: 700; }
-  .vip-card-big .vip-time { font-size: 14px; color: var(--text2); margin-top: 4px; }
+/* Alert */
+.alert {
+  padding:12px 14px;
+  border-radius:8px;
+  font-size:13px;
+  margin-bottom:12px;
+}
+.alert-info {
+  background:rgba(0,212,255,.08);
+  border:1px solid rgba(0,212,255,.2);
+  color:var(--cyan);
+}
+.alert-warn {
+  background:rgba(255,214,0,.08);
+  border:1px solid rgba(255,214,0,.2);
+  color:var(--yellow);
+}
 </style>
 </head>
 <body>
 
-<!-- BLOCKED -->
-<div id="blocked-screen">
-  <div style="font-size:60px">🚫</div>
-  <h2>Vui lòng mở qua<br>Telegram Mini App</h2>
+<!-- Blocked (mở ngoài Telegram) -->
+<div id="blocked"></div>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loader-ring"></div>
+  <div class="loader-text">INITIALIZING...</div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <!-- HEADER -->
+<!-- Main App -->
+<div id="app" style="display:none">
+
+  <!-- Header -->
   <div class="header">
-    <div class="header-avatar" id="h-avatar">?</div>
-    <div class="header-info">
-      <div class="header-name" id="h-name">Đang tải...</div>
-      <div class="header-sub" id="h-id">ID: —</div>
+    <div class="header-inner">
+      <div class="logo">BON SERVICE 👹</div>
+      <div class="user-badge">
+        <div class="user-avatar" id="avatarLetter">?</div>
+        <div class="user-name" id="headerName">...</div>
+      </div>
     </div>
-    <div id="h-badge" class="header-badge badge-free">Miễn phí</div>
   </div>
 
-  <!-- SCROLL AREA -->
-  <div class="scroll-area">
-    <!-- PAGE: HOME -->
+  <!-- Nav tabs -->
+  <div class="nav" id="mainNav">
+    <button class="nav-btn active" onclick="showPage('home')">🏠 Trang chủ</button>
+    <button class="nav-btn" onclick="showPage('profile')">👤 Hồ sơ</button>
+    <button class="nav-btn" onclick="showPage('shop')">🛒 Mua VIP</button>
+    <button class="nav-btn" onclick="showPage('getkey')">🎁 Key Free</button>
+    <button class="nav-btn" onclick="showPage('events')">🎉 Event</button>
+    <button class="nav-btn" onclick="showPage('tools')">🔧 Công cụ</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ HOME ══ -->
     <div class="page active" id="page-home">
-      <div class="card" id="vip-status-card">
-        <div class="card-title">Trạng thái VIP</div>
+      <div class="card">
+        <div class="card-title">⚡ TRẠNG THÁI HỆ THỐNG</div>
+        <div class="info-row">
+          <span class="info-label">Bot Status</span>
+          <span class="info-val green">🟢 Online</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Version</span>
+          <span class="info-val cyan">v3.0.0</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Spam Service</span>
+          <span class="info-val green">🟢 Active</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Admin</span>
+          <span class="info-val cyan">@liggdzut1</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-val" id="statUsers">—</span>
+          <div class="stat-label">USERS</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-val" id="statVip">—</span>
+          <div class="stat-label">VIP ACTIVE</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-val" id="statSpam">—</span>
+          <div class="stat-label">SPAM RUN</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-val" id="statKeys">—</span>
+          <div class="stat-label">KEYS POOL</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 LỆNH NHANH</div>
+        <button class="btn btn-primary" onclick="openTelegram('start')">
+          🤖 Mở Bot Telegram
+        </button>
+        <button class="btn btn-cyan" onclick="openTelegram('getkey')">
+          🎁 Lấy Key Free
+        </button>
+        <button class="btn btn-yellow" onclick="showPage('shop')">
+          💎 Mua Key VIP
+        </button>
+        <button class="btn btn-green" onclick="showPage('tools')">
+          🔧 Công cụ FF
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📖 HƯỚNG DẪN NHANH</div>
+        <div class="info-row">
+          <span class="info-label">1. Lấy key free</span>
+          <span class="chip chip-green">Free</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">2. Mua VIP để spam</span>
+          <span class="chip chip-red">VIP</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">3. Dùng /spam + token</span>
+          <span class="chip chip-cyan">Bot</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">4. Xem log tại /log</span>
+          <span class="chip chip-cyan">Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROFILE ══ -->
+    <div class="page" id="page-profile">
+      <div class="profile-hero">
+        <div class="profile-avatar" id="profileEmoji">👤</div>
+        <div class="profile-name" id="profileName">Đang tải...</div>
+        <div class="profile-id" id="profileId">ID: ...</div>
+        <div id="vipBadge" class="no-vip-badge">❌ Chưa có VIP</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💰 SỐ DƯ & VIP</div>
+        <div class="info-row">
+          <span class="info-label">Số dư</span>
+          <span class="info-val yellow" id="balance">0đ</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Trạng thái VIP</span>
+          <span class="info-val" id="vipStatus">❌ Chưa có</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Thời hạn còn</span>
+          <span class="info-val cyan" id="vipLeft">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Spam đang chạy</span>
+          <span class="info-val" id="spamStatus">🔴 Dừng</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚡ HÀNH ĐỘNG</div>
+        <button class="btn btn-primary" onclick="openTelegram('nap')">
+          💳 Nạp tiền
+        </button>
+        <button class="btn btn-yellow" onclick="showPage('shop')">
+          💎 Mua Key VIP
+        </button>
+        <div class="input-group" style="margin-top:4px">
+          <label class="input-label">NHẬP GIFTCODE</label>
+          <div style="display:flex;gap:8px">
+            <input class="input" id="giftInput" placeholder="VD: SUMMER2025" style="text-transform:uppercase">
+            <button class="btn btn-green" style="width:auto;padding:12px 16px;margin:0" onclick="useGiftcode()">
+              ✓
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔑 KÍCH HOẠT KEY</div>
+        <div class="input-group">
+          <label class="input-label">KEY VIP / FREE</label>
+          <input class="input" id="keyInput" placeholder="VD: VIP-XXXXXXXX-30D">
+        </div>
+        <button class="btn btn-cyan" onclick="activateKey()">
+          ✅ Kích hoạt
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ SHOP ══ -->
+    <div class="page" id="page-shop">
+      <div class="alert alert-info">
+        💡 Nạp tiền qua bot rồi mua VIP ngay tại đây. Kích hoạt tự động!
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title">💰 SỐ DƯ CỦA BẠN</div>
         <div style="text-align:center;padding:8px 0">
-          <div style="font-size:36px" id="vip-icon">❌</div>
-          <div style="font-size:16px;font-weight:700;margin-top:6px" id="vip-text">Chưa có VIP</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:3px" id="vip-time-text"></div>
+          <span style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--yellow)" id="shopBalance">0đ</span>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px">Bấm nút bên dưới để mua gói VIP</div>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Thông tin tài khoản</div>
-        <div class="card-row"><span class="card-row-label">👤 Tên</span><span class="card-row-value" id="p-name">—</span></div>
-        <div class="card-row"><span class="card-row-label">🆔 ID Telegram</span><span class="card-row-value" id="p-id">—</span></div>
-        <div class="card-row"><span class="card-row-label">💰 Số dư</span><span class="card-row-value" id="p-balance">0đ</span></div>
-        <div class="card-row"><span class="card-row-label">💎 VIP</span><span class="card-row-value" id="p-vip">❌ Chưa có</span></div>
-        <div class="card-row"><span class="card-row-label">📌 Phiên bản</span><span class="card-row-value">v5.6.0</span></div>
-      </div>
-
-      <div id="admin-btn-wrap" style="display:none">
-        <button class="btn btn-primary" onclick="openAdminLogin()">👑 Đăng nhập Admin Panel</button>
-      </div>
-
-      <div class="info-banner">
-        👑 Admin: <a href="https://t.me/liggdzut1" style="color:var(--accent);text-decoration:none">@liggdzut1</a>
-        &nbsp;|&nbsp; 💰 Mua VIP liên hệ ngay
-      </div>
-    </div>
-
-    <!-- PAGE: TOOLS -->
-    <div class="page" id="page-tools">
-      <div class="tab-row" id="tools-tab-row">
-        <button class="tab-btn active" onclick="switchToolTab('ff-info')">FF Info</button>
-        <button class="tab-btn" onclick="switchToolTab('check-mail')">Check Mail</button>
-        <button class="tab-btn" onclick="switchToolTab('check-social')">MXH</button>
-        <button class="tab-btn" onclick="switchToolTab('mail-ops')">Mail Ops</button>
-        <button class="tab-btn" onclick="switchToolTab('logout')">Đăng xuất</button>
-      </div>
-
-      <!-- FF Info -->
-      <div id="tool-ff-info">
-        <div class="card">
-          <div class="card-title">🎮 Tra cứu thông tin Free Fire</div>
-          <div class="input-group">
-            <label class="input-label">UID Free Fire</label>
-            <input type="text" id="ff-uid-input" placeholder="Nhập UID người chơi...">
-          </div>
-          <button class="btn btn-primary" onclick="doFFInfo()">
-            <span id="ff-info-btn-text">🔍 Tra cứu</span>
-          </button>
-          <div class="result-box" id="ff-info-result"></div>
-        </div>
-      </div>
-
-      <!-- Check Mail -->
-      <div id="tool-check-mail" style="display:none">
-        <div class="card">
-          <div class="card-title">📩 Check Mail Garena</div>
-          <div class="input-group">
-            <label class="input-label">Access Token / EAT Token</label>
-            <input type="text" id="cm-token" placeholder="Dán token vào đây...">
-          </div>
-          <button class="btn btn-primary" onclick="doCheckMail()">
-            <span id="cm-btn-text">🔍 Kiểm tra</span>
-          </button>
-          <div class="result-box" id="cm-result"></div>
-        </div>
-        <div class="info-banner">
-          ℹ️ Lấy token: Dùng app Proxy Pin → Bật HTTPS → Vào Garena → Copy <code>access_token=</code>
-        </div>
-      </div>
-
-      <!-- Check Social -->
-      <div id="tool-check-social" style="display:none">
-        <div class="card">
-          <div class="card-title">🔗 Check liên kết MXH</div>
-          <div class="input-group">
-            <label class="input-label">Access Token</label>
-            <input type="text" id="mxh-token" placeholder="Dán token vào đây...">
-          </div>
-          <button class="btn btn-primary" onclick="doCheckSocial()">
-            <span id="mxh-btn-text">🔍 Kiểm tra</span>
-          </button>
-          <div class="result-box" id="mxh-result"></div>
-        </div>
-      </div>
-
-      <!-- Mail Ops (VIP only) -->
-      <div id="tool-mail-ops" style="display:none">
-        <div class="card">
-          <div class="card-title">📧 Thao tác Mail (💎 VIP)</div>
-          <div class="tab-row">
-            <button class="tab-btn active" onclick="switchMailOpsTab('mail-info')">Mail Info</button>
-            <button class="tab-btn" onclick="switchMailOpsTab('send-otp')">Gửi OTP</button>
-            <button class="tab-btn" onclick="switchMailOpsTab('verify-otp')">Xác thực OTP</button>
-            <button class="tab-btn" onclick="switchMailOpsTab('bind-mail')">Liên kết</button>
-            <button class="tab-btn" onclick="switchMailOpsTab('unbind')">Gỡ liên kết</button>
-            <button class="tab-btn" onclick="switchMailOpsTab('cancel-req')">Hủy yêu cầu</button>
-          </div>
-
-          <!-- Mail Info -->
-          <div id="mailops-mail-info">
-            <div class="input-group">
-              <label class="input-label">Token</label>
-              <input type="text" id="mi-token" placeholder="Access token...">
-            </div>
-            <button class="btn btn-primary" onclick="doMailInfo()"><span id="mi-btn">🔍 Xem thông tin bind</span></button>
-            <div class="result-box" id="mi-result"></div>
-          </div>
-
-          <!-- Send OTP -->
-          <div id="mailops-send-otp" style="display:none">
-            <div class="input-group">
-              <label class="input-label">Token</label>
-              <input type="text" id="sotp-token" placeholder="Access token...">
-            </div>
-            <div class="input-group">
-              <label class="input-label">Email đích</label>
-              <input type="text" id="sotp-email" placeholder="email@gmail.com">
-            </div>
-            <button class="btn btn-primary" onclick="doSendOTP()"><span id="sotp-btn">📨 Gửi OTP</span></button>
-            <div class="result-box" id="sotp-result"></div>
-          </div>
-
-          <!-- Verify OTP -->
-          <div id="mailops-verify-otp" style="display:none">
-            <div class="input-group">
-              <label class="input-label">Token</label>
-              <input type="text" id="votp-token" placeholder="Access token...">
-            </div>
-            <div class="input-group">
-              <label class="input-label">Email</label>
-              <input type="text" id="votp-email" placeholder="email@gmail.com">
-            </div>
-            <div class="input-group">
-              <label class="input-label">Mã OTP</label>
-              <input type="text" id="votp-otp" placeholder="6 chữ số...">
-            </div>
-            <button class="btn btn-primary" onclick="doVerifyOTP()"><span id="votp-btn">✅ Xác thực OTP</span></button>
-            <div class="result-box" id="votp-result"></div>
-          </div>
-
-          <!-- Bind Mail -->
-          <div id="mailops-bind-mail" style="display:none">
-            <div class="info-banner" style="margin-bottom:10px">⚠️ Chạy Gửi OTP và Xác thực OTP trước!</div>
-            <div class="input-group">
-              <label class="input-label">Token</label>
-              <input type="text" id="bm-token" placeholder="Access token...">
-            </div>
-            <div class="input-group">
-              <label class="input-label">Email</label>
-              <input type="text" id="bm-email" placeholder="email@gmail.com">
-            </div>
-            <div class="input-group">
-              <label class="input-label">Mật khẩu phụ</label>
-              <input type="password" id="bm-pass" placeholder="Mật khẩu email...">
-            </div>
-            <button class="btn btn-primary" onclick="doBindMail()"><span id="bm-btn">🔗 Liên kết Email</span></button>
-            <div class="result-box" id="bm-result"></div>
-          </div>
-
-          <!-- Unbind -->
-          <div id="mailops-unbind" style="display:none">
-            <div class="tab-row">
-              <button class="tab-btn active" onclick="switchUnbindTab('req')">Gửi yêu cầu</button>
-              <button class="tab-btn" onclick="switchUnbindTab('verify')">Xác nhận OTP</button>
-            </div>
-            <div id="unbind-req">
-              <div class="input-group">
-                <label class="input-label">Token</label>
-                <input type="text" id="ub-token" placeholder="Access token...">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Email cần gỡ</label>
-                <input type="text" id="ub-email" placeholder="email@gmail.com">
-              </div>
-              <button class="btn btn-danger" onclick="doUnbind()"><span id="ub-btn">🗑 Gỡ liên kết (gửi OTP)</span></button>
-              <div class="result-box" id="ub-result"></div>
-            </div>
-            <div id="unbind-verify" style="display:none">
-              <div class="input-group">
-                <label class="input-label">Token</label>
-                <input type="text" id="ubv-token" placeholder="Access token...">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Email</label>
-                <input type="text" id="ubv-email" placeholder="email@gmail.com">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Mã OTP</label>
-                <input type="text" id="ubv-otp" placeholder="6 chữ số...">
-              </div>
-              <button class="btn btn-danger" onclick="doUnbindOTP()"><span id="ubv-btn">✅ Xác nhận gỡ</span></button>
-              <div class="result-box" id="ubv-result"></div>
-            </div>
-          </div>
-
-          <!-- Cancel Request -->
-          <div id="mailops-cancel-req" style="display:none">
-            <div class="input-group">
-              <label class="input-label">Token</label>
-              <input type="text" id="cr-token" placeholder="Access token...">
-            </div>
-            <button class="btn btn-danger" onclick="doCancelReq()"><span id="cr-btn">❌ Hủy yêu cầu đang chờ</span></button>
-            <div class="result-box" id="cr-result"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Logout -->
-      <div id="tool-logout" style="display:none">
-        <div class="card">
-          <div class="card-title">🚪 Đăng xuất tài khoản Garena</div>
-          <div class="info-banner">⚠️ Đăng xuất sẽ làm token die. Chắc chắn chưa?</div>
-          <div class="input-group">
-            <label class="input-label">Access Token</label>
-            <input type="text" id="lo-token" placeholder="Dán token vào đây...">
-          </div>
-          <button class="btn btn-danger" onclick="doLogout()"><span id="lo-btn">🚪 Đăng xuất</span></button>
-          <div class="result-box" id="lo-result"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PAGE: VIP -->
-    <div class="page" id="page-vip">
-      <div class="vip-card-big">
-        <div class="vip-icon" id="vip-big-icon">❌</div>
-        <div class="vip-status" id="vip-big-text">Chưa có VIP</div>
-        <div class="vip-time" id="vip-big-time"></div>
-      </div>
-
-      <div class="section-title">🔑 Kích hoạt Key</div>
-      <div class="card">
-        <div class="input-group">
-          <label class="input-label">Nhập key VIP hoặc key FREE</label>
-          <input type="text" id="activate-key-input" placeholder="VIP-XXXX hoặc FREE-XXXX">
-        </div>
-        <button class="btn btn-gold" onclick="doActivateKey()">
-          <span id="activate-btn-text">⚡ Kích hoạt</span>
+        <button class="btn btn-secondary" onclick="openTelegram('nap')">
+          💳 Nạp thêm tiền
         </button>
-        <div class="result-box" id="activate-result"></div>
       </div>
 
-      <div class="section-title">🛒 Mua Key VIP</div>
-      <div id="shop-list">
-        <div class="card" style="text-align:center;color:var(--text2)">Đang tải bảng giá...</div>
-      </div>
-
-      <div class="section-title">🎁 Giftcode</div>
-      <div class="card">
-        <div class="input-group">
-          <label class="input-label">Nhập Giftcode</label>
-          <input type="text" id="gift-input" placeholder="SUMMER2025...">
+      <div class="section-title">🛒 BẢNG GIÁ VIP</div>
+      <div class="shop-grid" id="shopGrid">
+        <!-- Dynamic -->
+        <div class="shop-card" onclick="buyVip('1',5000,1)">
+          <div class="shop-price">5,000đ</div>
+          <div class="shop-label">1 Ngày</div>
+          <div class="shop-desc">Dùng thử</div>
+          <button class="shop-buy-btn">Mua ngay</button>
         </div>
-        <button class="btn btn-success" onclick="doGiftcode()">
-          <span id="gift-btn-text">🎁 Đổi Giftcode</span>
+        <div class="shop-card popular" onclick="buyVip('7',25000,7)">
+          <div class="shop-price">25,000đ</div>
+          <div class="shop-label">7 Ngày</div>
+          <div class="shop-desc">Phổ biến</div>
+          <button class="shop-buy-btn">Mua ngay</button>
+        </div>
+        <div class="shop-card" onclick="buyVip('30',80000,30)">
+          <div class="shop-price">80,000đ</div>
+          <div class="shop-label">30 Ngày</div>
+          <div class="shop-desc">Tiết kiệm</div>
+          <button class="shop-buy-btn">Mua ngay</button>
+        </div>
+        <div class="shop-card" onclick="buyVip('99',200000,99)">
+          <div class="shop-price">200,000đ</div>
+          <div class="shop-label">99 Ngày</div>
+          <div class="shop-desc">Giá trị nhất</div>
+          <button class="shop-buy-btn">Mua ngay</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ GET KEY ══ -->
+    <div class="page" id="page-getkey">
+      <div class="alert alert-warn">
+        ⚠️ Key free chỉ dùng được 1 giờ và không dùng được lệnh /spam
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎁 LẤY KEY FREE</div>
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:48px;margin-bottom:12px;filter:drop-shadow(0 0 10px rgba(255,214,0,.4))">🎁</div>
+          <div style="font-size:14px;color:var(--text2);margin-bottom:16px">
+            Mỗi lần lấy 1 key free, hạn 1 giờ.<br>Cần key VIP để dùng /spam
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="getKeyFree()">
+          🎁 Lấy Key Free Ngay
         </button>
-        <div class="result-box" id="gift-result"></div>
       </div>
-    </div>
 
-    <!-- PAGE: SPAM -->
-    <div class="page" id="page-spam">
+      <div class="card" id="keyResult" style="display:none">
+        <div class="card-title">🔑 KEY CỦA BẠN</div>
+        <div class="alert alert-info">
+          <div style="font-family:var(--mono);font-size:12px;word-break:break-all" id="keyDisplay">—</div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:12px">
+          ⏳ Hạn sử dụng: 1 giờ
+        </div>
+        <button class="btn btn-cyan" onclick="copyKey()">📋 Copy Key</button>
+        <button class="btn btn-secondary" onclick="openTelegram('activevip')">
+          ✅ Kích hoạt trong Bot
+        </button>
+      </div>
+
       <div class="card">
-        <div class="card-title">📡 Spam Log FF (💎 Chỉ VIP)</div>
-        <div class="info-banner">
-          💡 Lấy token bằng Proxy Pin: Bật HTTPS Proxy → Vào Garena → Tìm <code>access_token=</code> → Copy
+        <div class="card-title">📌 CÁCH DÙNG KEY</div>
+        <div class="info-row">
+          <span class="info-label">Bước 1</span>
+          <span style="font-size:13px">Lấy key bên trên</span>
         </div>
-        <div class="input-group" style="margin-top:10px">
-          <label class="input-label">Access Token / EAT Token</label>
-          <textarea id="spam-token" placeholder="Dán access_token hoặc eat= link..."></textarea>
+        <div class="info-row">
+          <span class="info-label">Bước 2</span>
+          <span style="font-size:13px">Vào bot Telegram</span>
         </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="doStartSpam()">
-            <span id="spam-start-btn">🚀 Bắt đầu Spam</span>
-          </button>
-          <button class="btn btn-danger" onclick="doStopSpam()">
-            🛑 Dừng
-          </button>
+        <div class="info-row">
+          <span class="info-label">Bước 3</span>
+          <span style="font-size:13px">/activevip &lt;key&gt;</span>
         </div>
       </div>
-
-      <div id="spam-status-card" class="card" style="display:none">
-        <div class="card-title">📊 Trạng thái phiên</div>
-        <div class="card-row">
-          <span class="card-row-label">Trạng thái</span>
-          <span class="card-row-value" id="spam-status-val">—</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">👤 Nick</span>
-          <span class="card-row-value" id="spam-nick-val">—</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">🌐 Server</span>
-          <span class="card-row-value" id="spam-server-val">—</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">📦 Đã gửi</span>
-          <span class="card-row-value" id="spam-count-val">0 gói</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">⏱ Session ID</span>
-          <span class="card-row-value" id="spam-session-val">—</span>
-        </div>
-      </div>
-
-      <div class="section-title">📋 Log phiên</div>
-      <div class="result-box visible" id="spam-log" style="min-height:80px;background:var(--card);border:1px solid var(--border)">Chưa có log...</div>
     </div>
 
-    <!-- PAGE: EVENTS -->
+    <!-- ══ EVENTS ══ -->
     <div class="page" id="page-events">
-      <div class="section-title">🎉 Sự kiện đang mở</div>
-      <div id="events-list">
-        <div class="card" style="text-align:center;color:var(--text2)">Đang tải sự kiện...</div>
-      </div>
-
-      <div class="section-title">🎮 Nạp tiền</div>
-      <div class="card">
-        <div class="card-title">💳 Thông tin nạp</div>
-        <div class="card-row">
-          <span class="card-row-label">Ngân hàng / Ví</span>
-          <span class="card-row-value">ZaloPay</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">Số tài khoản</span>
-          <span class="card-row-value">0368925982 <button class="copy-btn" onclick="copyText('0368925982')">Copy</button></span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">Chủ tài khoản</span>
-          <span class="card-row-value">TRAN MANH DUNG</span>
-        </div>
-        <hr>
-        <div class="input-group">
-          <label class="input-label">Nội dung chuyển khoản (NẠP [ID của bạn])</label>
-          <input type="text" id="nap-content" readonly>
-        </div>
-        <button class="copy-btn" style="width:100%;padding:8px;margin-top:4px" onclick="copyText(document.getElementById('nap-content').value)">📋 Copy nội dung</button>
-        <div class="info-banner" style="margin-top:10px">
-          📌 Sau khi chuyển khoản, liên hệ <a href="https://t.me/liggdzut1" style="color:var(--accent)">@liggdzut1</a> để được cộng tiền
+      <div class="section-title">🎉 SỰ KIỆN ĐANG MỞ</div>
+      <div id="eventsList">
+        <div class="event-card">
+          <div class="event-title">🎮 Không có sự kiện nào</div>
+          <div class="event-desc">Chờ admin tạo event mới nhé!</div>
+          <button class="btn btn-secondary" onclick="openTelegram('event')" style="margin-top:4px">
+            📋 Xem trong Bot
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- PAGE: ADMIN -->
+    <!-- ══ TOOLS ══ -->
+    <div class="page" id="page-tools">
+      <div class="section-title">🔧 CÔNG CỤ FF</div>
+
+      <div class="card">
+        <div class="card-title">🔍 CHECK INFO NICK FF</div>
+        <div class="input-group">
+          <label class="input-label">UID FREE FIRE</label>
+          <input class="input" id="ffUid" placeholder="Nhập UID...">
+        </div>
+        <button class="btn btn-cyan" onclick="checkFFInfo()">🔍 Check Info</button>
+        <div id="ffResult" style="display:none;margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📧 CHECK MAIL</div>
+        <div class="input-group">
+          <label class="input-label">ACCESS TOKEN</label>
+          <input class="input" id="mailToken" placeholder="Dán token vào đây...">
+        </div>
+        <button class="btn btn-primary" onclick="checkMail()">📧 Check Mail</button>
+        <div id="mailResult" style="display:none;margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚀 SPAM LOG (VIP)</div>
+        <div class="input-group">
+          <label class="input-label">ACCESS TOKEN</label>
+          <input class="input" id="spamToken" placeholder="Dán token vào đây...">
+        </div>
+        <button class="btn btn-primary" id="spamBtn" onclick="startSpam()">🚀 Bắt đầu Spam</button>
+        <button class="btn btn-red" id="stopBtn" style="display:none" onclick="stopSpam()">🛑 Dừng Spam</button>
+        <div id="spamResult" style="display:none;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══ ADMIN ══ -->
     <div class="page" id="page-admin">
-      <div class="stat-grid">
-        <div class="stat-item">
-          <div class="stat-val" id="adm-users">—</div>
-          <div class="stat-lbl">👥 Tổng Users</div>
+      <div class="admin-login-wrap" id="adminLoginWrap">
+        <div class="admin-icon">🛡️</div>
+        <div style="font-family:var(--title);font-size:18px;font-weight:700;text-align:center">
+          ADMIN PANEL
         </div>
-        <div class="stat-item">
-          <div class="stat-val" id="adm-vip">—</div>
-          <div class="stat-lbl">💎 VIP Active</div>
+        <div style="font-size:13px;color:var(--text2);text-align:center">
+          Chỉ admin mới có thể truy cập
         </div>
-        <div class="stat-item">
-          <div class="stat-val" id="adm-keys">—</div>
-          <div class="stat-lbl">🔑 Keys Pool</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-val" id="adm-banned">—</div>
-          <div class="stat-lbl">🚫 Đã ban</div>
-        </div>
+        <button class="btn btn-primary" style="width:200px" onclick="adminLogin()">
+          🔐 Đăng nhập Admin
+        </button>
       </div>
 
-      <!-- Toggle settings -->
-      <div class="card">
-        <div class="card-title">⚙️ Cài đặt hệ thống</div>
-        <div class="toggle-row">
-          <span class="toggle-label">🤖 Bot hoạt động</span>
-          <label class="toggle-switch"><input type="checkbox" id="adm-toggle-bot" onchange="adminToggle('bot_on',this.checked)"><span class="toggle-slider"></span></label>
+      <div id="adminContent" style="display:none">
+        <div class="admin-stats">
+          <div class="admin-stat">
+            <div class="admin-stat-val" id="aUsers">0</div>
+            <div class="admin-stat-label">USERS</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-val" id="aVip">0</div>
+            <div class="admin-stat-label">VIP</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-val" id="aSpam">0</div>
+            <div class="admin-stat-label">SPAM</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-val" id="aKeys">0</div>
+            <div class="admin-stat-label">KEYS</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-val" id="aBan">0</div>
+            <div class="admin-stat-label">BAN</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-val" id="aNap">0</div>
+            <div class="admin-stat-label">CHỜ NẠP</div>
+          </div>
         </div>
-        <div class="toggle-row">
-          <span class="toggle-label">🚀 Cho phép Spam</span>
-          <label class="toggle-switch"><input type="checkbox" id="adm-toggle-spam" onchange="adminToggle('spam_on',this.checked)"><span class="toggle-slider"></span></label>
+
+        <div class="card">
+          <div class="card-title">⚙️ ĐIỀU KHIỂN</div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">🤖 Bot</div>
+              <div class="toggle-desc">Bật/tắt toàn bộ bot</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="togBot" checked onchange="adminToggle('bot',this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">🚀 Spam</div>
+              <div class="toggle-desc">Cho phép spam log</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="togSpam" checked onchange="adminToggle('spam',this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">🔧 Bảo trì</div>
+              <div class="toggle-desc">Bật chế độ bảo trì</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="togMaint" onchange="adminToggle('maint',this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">🎁 Key Free Auto</div>
+              <div class="toggle-desc">Phát key free tự động</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="togFreekey" checked onchange="adminToggle('freekey',this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
-        <div class="toggle-row">
-          <span class="toggle-label">🔧 Chế độ bảo trì</span>
-          <label class="toggle-switch"><input type="checkbox" id="adm-toggle-maint" onchange="adminToggle('maintenance',this.checked)"><span class="toggle-slider"></span></label>
+
+        <div class="card">
+          <div class="card-title">🔑 TẠO KEY VIP</div>
+          <div class="input-group">
+            <label class="input-label">SỐ NGÀY</label>
+            <input class="input" id="adminKeyDays" type="number" placeholder="VD: 30" min="1">
+          </div>
+          <button class="btn btn-primary" onclick="adminCreateKey()">🔑 Tạo Key VIP</button>
+          <div id="adminKeyResult" style="display:none;margin-top:8px" class="alert alert-info"></div>
         </div>
-        <div class="toggle-row">
-          <span class="toggle-label">🎁 Phát key free</span>
-          <label class="toggle-switch"><input type="checkbox" id="adm-toggle-freekey" onchange="adminToggle('free_key_on',this.checked)"><span class="toggle-slider"></span></label>
+
+        <div class="card">
+          <div class="card-title">💰 CỘNG TIỀN USER</div>
+          <div class="input-group">
+            <label class="input-label">USER ID</label>
+            <input class="input" id="adminUserId" placeholder="Nhập ID Telegram">
+          </div>
+          <div class="input-group">
+            <label class="input-label">SỐ TIỀN (VND)</label>
+            <input class="input" id="adminAmount" type="number" placeholder="VD: 50000">
+          </div>
+          <div class="input-group">
+            <label class="input-label">NỘI DUNG</label>
+            <input class="input" id="adminContent" placeholder="VD: Nap VIP 30 ngay">
+          </div>
+          <button class="btn btn-green" onclick="adminAddBalance()">💰 Cộng tiền</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📢 BROADCAST</div>
+          <div class="input-group">
+            <label class="input-label">NỘI DUNG THÔNG BÁO</label>
+            <textarea class="input" id="broadcastMsg" rows="3" placeholder="Nhập thông báo..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="adminBroadcast()">📢 Gửi tất cả</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎁 TẠO GIFTCODE</div>
+          <div class="input-group">
+            <label class="input-label">TÊN CODE</label>
+            <input class="input" id="gcCode" placeholder="VD: SUMMER2025" style="text-transform:uppercase">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="input-group">
+              <label class="input-label">LOẠI</label>
+              <select class="input" id="gcType">
+                <option value="key">VIP Key</option>
+                <option value="money">Tiền</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="input-label">GIÁ TRỊ</label>
+              <input class="input" id="gcValue" type="number" placeholder="7 ngày/50000đ">
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">SỐ LƯỢT DÙNG</label>
+            <input class="input" id="gcUses" type="number" placeholder="VD: 100">
+          </div>
+          <button class="btn btn-yellow" onclick="adminCreateGift()">🎁 Tạo Giftcode</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🚫 BAN / UNBAN</div>
+          <div class="input-group">
+            <label class="input-label">USER ID</label>
+            <input class="input" id="banId" placeholder="Nhập ID Telegram">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-red" onclick="adminBan(true)" style="margin:0">🚫 Ban</button>
+            <button class="btn btn-green" onclick="adminBan(false)" style="margin:0">✅ Unban</button>
+          </div>
         </div>
       </div>
-
-      <!-- Tạo Key -->
-      <div class="card">
-        <div class="card-title">🔑 Tạo Key VIP</div>
-        <div class="input-group">
-          <label class="input-label">Số ngày</label>
-          <input type="text" id="adm-key-days" placeholder="VD: 30">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Số lượng key</label>
-          <input type="text" id="adm-key-qty" placeholder="VD: 1">
-        </div>
-        <button class="btn btn-gold" onclick="adminCreateKey()"><span id="adm-key-btn">✨ Tạo Key</span></button>
-        <div class="result-box" id="adm-key-result"></div>
-      </div>
-
-      <!-- Quản lý User -->
-      <div class="card">
-        <div class="card-title">👤 Quản lý User</div>
-        <div class="tab-row">
-          <button class="tab-btn active" onclick="switchAdminUserTab('vip')">Xem VIP</button>
-          <button class="tab-btn" onclick="switchAdminUserTab('ban')">Ban/Unban</button>
-          <button class="tab-btn" onclick="switchAdminUserTab('delvip')">Xóa VIP</button>
-          <button class="tab-btn" onclick="switchAdminUserTab('cong')">Cộng tiền</button>
-        </div>
-
-        <div id="adm-user-vip">
-          <button class="btn btn-outline" onclick="adminListVIP()">📋 Danh sách VIP</button>
-          <div class="result-box" id="adm-vip-list"></div>
-        </div>
-
-        <div id="adm-user-ban" style="display:none">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">User ID</label>
-            <input type="text" id="adm-ban-id" placeholder="ID người dùng...">
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-danger btn-sm" onclick="adminBan()">🚫 Ban</button>
-            <button class="btn btn-success btn-sm" onclick="adminUnban()">✅ Unban</button>
-          </div>
-          <div class="result-box" id="adm-ban-result"></div>
-        </div>
-
-        <div id="adm-user-delvip" style="display:none">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">User ID cần xóa VIP</label>
-            <input type="text" id="adm-delvip-id" placeholder="ID người dùng...">
-          </div>
-          <button class="btn btn-danger btn-sm" onclick="adminDelVIP()">🗑 Xóa VIP</button>
-          <div class="result-box" id="adm-delvip-result"></div>
-        </div>
-
-        <div id="adm-user-cong" style="display:none">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">User ID</label>
-            <input type="text" id="adm-cong-id" placeholder="ID người dùng...">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Số tiền cộng</label>
-            <input type="text" id="adm-cong-amount" placeholder="VD: 50000">
-          </div>
-          <button class="btn btn-success btn-sm" onclick="adminCong()">💰 Cộng tiền</button>
-          <div class="result-box" id="adm-cong-result"></div>
-        </div>
-      </div>
-
-      <!-- Quản lý Key -->
-      <div class="card">
-        <div class="card-title">🔑 Danh sách Key Pool</div>
-        <button class="btn btn-outline" onclick="adminListKeys()">📋 Xem Keys</button>
-        <button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="adminCleanup()">🗑 Xóa key cũ & VIP hết hạn</button>
-        <div class="result-box" id="adm-keys-list"></div>
-      </div>
-
-      <!-- Shop -->
-      <div class="card">
-        <div class="card-title">🛒 Chỉnh bảng giá</div>
-        <div class="input-group">
-          <label class="input-label">ID gói (VD: 1, 7, 30)</label>
-          <input type="text" id="adm-shop-id" placeholder="ID">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Số ngày</label>
-          <input type="text" id="adm-shop-days" placeholder="VD: 7">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Giá (VNĐ)</label>
-          <input type="text" id="adm-shop-price" placeholder="VD: 30000">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Tên gói</label>
-          <input type="text" id="adm-shop-label" placeholder="VD: 7 Ngày">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Mô tả</label>
-          <input type="text" id="adm-shop-desc" placeholder="VD: Phổ biến">
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary btn-sm" onclick="adminSetShop()">💾 Lưu gói</button>
-          <button class="btn btn-danger btn-sm" onclick="adminDelShop()">🗑 Xóa gói</button>
-        </div>
-        <div class="result-box" id="adm-shop-result"></div>
-      </div>
-
-      <!-- Event Admin -->
-      <div class="card">
-        <div class="card-title">🎉 Quản lý Event</div>
-        <div class="tab-row">
-          <button class="tab-btn active" onclick="switchAdminEventTab('create')">Tạo Event</button>
-          <button class="tab-btn" onclick="switchAdminEventTab('list')">Danh sách</button>
-          <button class="tab-btn" onclick="switchAdminEventTab('end')">Kết thúc</button>
-        </div>
-
-        <div id="adm-event-create">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">Loại (photo/link/game)</label>
-            <select id="adm-ev-type">
-              <option value="photo">Photo</option>
-              <option value="link">Link</option>
-              <option value="game">Game</option>
-            </select>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Phần thưởng</label>
-            <select id="adm-ev-rtype">
-              <option value="key">Key VIP (ngày)</option>
-              <option value="money">Tiền (đồng)</option>
-            </select>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Giá trị thưởng</label>
-            <input type="text" id="adm-ev-rval" placeholder="VD: 7 (ngày) hoặc 50000">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Tiêu đề event</label>
-            <input type="text" id="adm-ev-title" placeholder="Tên sự kiện...">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Mô tả</label>
-            <input type="text" id="adm-ev-desc" placeholder="Mô tả chi tiết...">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Link (nếu type=link)</label>
-            <input type="text" id="adm-ev-link" placeholder="https://...">
-          </div>
-          <button class="btn btn-success btn-sm" onclick="adminCreateEvent()">🎉 Tạo Event</button>
-          <div class="result-box" id="adm-ev-create-result"></div>
-        </div>
-
-        <div id="adm-event-list" style="display:none">
-          <button class="btn btn-outline" style="margin-top:8px" onclick="adminListEvents()">📋 Xem tất cả</button>
-          <div class="result-box" id="adm-ev-list-result"></div>
-        </div>
-
-        <div id="adm-event-end" style="display:none">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">Event ID cần kết thúc</label>
-            <input type="text" id="adm-ev-end-id" placeholder="Event ID...">
-          </div>
-          <button class="btn btn-danger btn-sm" onclick="adminEndEvent()">🔴 Kết thúc Event</button>
-          <div class="result-box" id="adm-ev-end-result"></div>
-        </div>
-      </div>
-
-      <!-- Giftcode Admin -->
-      <div class="card">
-        <div class="card-title">🎁 Quản lý Giftcode</div>
-        <div class="tab-row">
-          <button class="tab-btn active" onclick="switchAdminGiftTab('create')">Tạo mã</button>
-          <button class="tab-btn" onclick="switchAdminGiftTab('list')">Danh sách</button>
-          <button class="tab-btn" onclick="switchAdminGiftTab('delete')">Xóa mã</button>
-        </div>
-
-        <div id="adm-gift-create">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">Mã Giftcode</label>
-            <input type="text" id="adm-gc-code" placeholder="SUMMER2025...">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Loại thưởng</label>
-            <select id="adm-gc-rtype">
-              <option value="key">Key VIP</option>
-              <option value="money">Tiền</option>
-            </select>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Giá trị</label>
-            <input type="text" id="adm-gc-rval" placeholder="VD: 7 hoặc 50000">
-          </div>
-          <div class="input-group">
-            <label class="input-label">Số lượt dùng tối đa</label>
-            <input type="text" id="adm-gc-maxuses" placeholder="VD: 100">
-          </div>
-          <button class="btn btn-gold btn-sm" onclick="adminCreateGift()">✨ Tạo Giftcode</button>
-          <div class="result-box" id="adm-gc-create-result"></div>
-        </div>
-
-        <div id="adm-gift-list" style="display:none">
-          <button class="btn btn-outline" style="margin-top:8px" onclick="adminListGifts()">📋 Xem tất cả</button>
-          <div class="result-box" id="adm-gc-list-result"></div>
-        </div>
-
-        <div id="adm-gift-delete" style="display:none">
-          <div class="input-group" style="margin-top:8px">
-            <label class="input-label">Mã cần xóa</label>
-            <input type="text" id="adm-gc-del-code" placeholder="CODE...">
-          </div>
-          <button class="btn btn-danger btn-sm" onclick="adminDelGift()">🗑 Xóa Giftcode</button>
-          <div class="result-box" id="adm-gc-del-result"></div>
-        </div>
-      </div>
-
-      <!-- Broadcast -->
-      <div class="card">
-        <div class="card-title">📢 Broadcast tới tất cả user</div>
-        <div class="input-group">
-          <label class="input-label">Nội dung</label>
-          <textarea id="adm-broadcast-msg" placeholder="Nội dung thông báo..."></textarea>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="adminBroadcast()"><span id="adm-bc-btn">📢 Gửi ngay</span></button>
-        <div class="result-box" id="adm-bc-result"></div>
-      </div>
-
-      <!-- Logout admin -->
-      <button class="btn btn-outline" style="margin-top:8px" onclick="adminLogout()">🚪 Đăng xuất Admin</button>
     </div>
+
+    <div class="spacer"></div>
+  </div><!-- /content -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="bottom-btn active" onclick="showPage('home')">
+      <span class="bottom-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="bottom-btn" onclick="showPage('profile')">
+      <span class="bottom-icon">👤</span>
+      <span>Hồ sơ</span>
+    </button>
+    <button class="bottom-btn" onclick="showPage('shop')">
+      <span class="bottom-icon">💎</span>
+      <span>VIP</span>
+    </button>
+    <button class="bottom-btn" onclick="showPage('tools')">
+      <span class="bottom-icon">🔧</span>
+      <span>Tools</span>
+    </button>
+    <button class="bottom-btn" id="adminNavBtn" onclick="showPage('admin')" style="display:none">
+      <span class="bottom-icon">🛡️</span>
+      <span>Admin</span>
+    </button>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" onclick="goPage('home',this)">
-      <span class="nav-icon">🏠</span><span>Trang chủ</span>
-    </button>
-    <button class="nav-item" onclick="goPage('tools',this)">
-      <span class="nav-icon">🔧</span><span>Công cụ</span>
-    </button>
-    <button class="nav-item" onclick="goPage('vip',this)">
-      <span class="nav-icon">💎</span><span>VIP</span>
-    </button>
-    <button class="nav-item" onclick="goPage('spam',this)">
-      <span class="nav-icon">📡</span><span>Spam</span>
-    </button>
-    <button class="nav-item" onclick="goPage('events',this)">
-      <span class="nav-icon">🎉</span><span>Event</span>
-    </button>
-  </nav>
-</div>
+</div><!-- /app -->
 
-<!-- ADMIN LOGIN OVERLAY -->
-<div class="admin-login-overlay" id="admin-login-overlay">
-  <div class="admin-login-box">
-    <div style="font-size:28px;text-align:center;margin-bottom:8px">👑</div>
-    <div style="text-align:center;font-size:16px;font-weight:700;margin-bottom:16px">Admin Panel</div>
-    <div class="input-group">
-      <label class="input-label">Mật khẩu Admin</label>
-      <input type="password" id="admin-pw-input" placeholder="Nhập mật khẩu..." onkeydown="if(event.key==='Enter')doAdminLogin()">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="doAdminLogin()">🔓 Đăng nhập</button>
-      <button class="btn btn-outline" onclick="closeAdminLogin()">Hủy</button>
-    </div>
-    <div style="font-size:12px;color:var(--red);margin-top:8px;text-align:center" id="admin-login-err"></div>
-  </div>
-</div>
-
-<!-- TOAST -->
+<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-// ══════════════════════════════════════
-//   CẤU HÌNH
-// ══════════════════════════════════════
-const BOT_TOKEN  = '8415663762:AAFNXnnhyJGiOJzXA6gQHlaW1NJG_jIJ-PU';
-const ADMIN_TG_ID = 6683331082;
-const ADMIN_PW   = 'manhdungdz';
-const VIP_CONTACT = '@liggdzut1';
-const VERSION = '5.6.0';
-const GARENA_HEADERS = { 'User-Agent': 'GarenaMSDK/4.0.30 (iPhone9,1;ios - 15.8.6;vi-US;US)' };
-const GARENA_BIND_URL = 'https://100067.connect.garena.com';
-const GARENA_BIND_HEADERS = {
-  'Content-Type': 'application/x-www-form-urlencoded',
-  'User-Agent': 'GarenaMSDK/4.0.30 (iPad7,12;ios - 18.7;vi-VN;VN)',
-  'Accept': 'application/json'
-};
-const DEFAULT_SHOP = {
-  '1':  { days:1,  price:5000,   label:'1 Ngày',   desc:'Dùng thử' },
-  '7':  { days:7,  price:25000,  label:'7 Ngày',   desc:'Phổ biến' },
-  '30': { days:30, price:80000,  label:'30 Ngày',  desc:'Tiết kiệm' },
-  '99': { days:99, price:200000, label:'99 Ngày',  desc:'Giá trị nhất' },
-};
+// ════════════════════════════════════════
+//         CẤU HÌNH
+// ════════════════════════════════════════
+const ADMIN_ID   = 6683331082;
+const BOT_USERNAME = 'capyuwu_bot'; // ← Thay username bot của bạn
+const API_BASE   = ''; // ← URL backend API nếu có (để trống nếu chỉ redirect bot)
 
-// ══════════════════════════════════════
-//   STATE
-// ══════════════════════════════════════
-let tgUser = null;
-let currentDB = null;
-let isAdmin = false;
-let spamActive = false;
-let spamTimer = null;
-let spamCount = 0;
-let spamSessionId = '';
-let verifierToken = null;
+// ════════════════════════════════════════
+//         TELEGRAM WEBAPP INIT
+// ════════════════════════════════════════
+const tg = window.Telegram?.WebApp;
+let currentUser = null;
+let isAdmin     = false;
+let userData    = { balance: 0, vip: false, vipLeft: '' };
 
-// ══════════════════════════════════════
-//   DATABASE (localStorage)
-// ══════════════════════════════════════
-function loadDB() {
-  try {
-    const raw = localStorage.getItem('ff_bot_data');
-    if (raw) {
-      const d = JSON.parse(raw);
-      if (!d.balance) d.balance = {};
-      if (!d.shop) d.shop = { ...DEFAULT_SHOP };
-      if (!d.users) d.users = {};
-      if (!d.vip_keys) d.vip_keys = {};
-      if (!d.key_pool) d.key_pool = {};
-      if (!d.banned) d.banned = [];
-      if (!d.events) d.events = {};
-      if (!d.giftcodes) d.giftcodes = {};
-      if (!d.settings) d.settings = { bot_on:true, spam_on:true, maintenance:false, free_key_on:true };
-      return d;
-    }
-  } catch(e) {}
-  return {
-    users: {}, vip_keys: {}, key_pool: {}, banned: [], balance: {}, shop: { ...DEFAULT_SHOP },
-    events: {}, giftcodes: {},
-    settings: { bot_on:true, spam_on:true, maintenance:false, free_key_on:true }
-  };
-}
-function saveDB(db) {
-  localStorage.setItem('ff_bot_data', JSON.stringify(db));
-  currentDB = db;
-}
-
-// ══════════════════════════════════════
-//   VIP HELPERS
-// ══════════════════════════════════════
-function checkVIP(uid) {
-  const db = loadDB();
-  const vk = db.vip_keys[String(uid)];
-  if (!vk) return { ok: false, text: 'Chưa có key VIP' };
-  if (vk.expire === -1) return { ok: true, text: '♾️ Vĩnh viễn' };
-  const left = vk.expire - Date.now() / 1000;
-  if (left <= 0) return { ok: false, text: 'Key đã hết hạn' };
-  const h = Math.floor(left / 3600);
-  const m = Math.floor((left % 3600) / 60);
-  return { ok: true, text: `${h}h ${m}m` };
-}
-
-function activateKey(uid, keyCode) {
-  const db = loadDB();
-  const pool = db.key_pool || {};
-  if (!pool[keyCode]) return { ok: false, msg: 'Key không hợp lệ!' };
-  const kinfo = pool[keyCode];
-  if (kinfo.used) return { ok: false, msg: 'Key đã được dùng rồi!' };
-
-  const now = Date.now() / 1000;
-  const isFree = kinfo.free || kinfo.days === 0;
-  let newExp, label;
-
-  if (isFree) {
-    newExp = now + 3600;
-    label = '1 giờ (free)';
-  } else {
-    const cur = (db.vip_keys[String(uid)] || {}).expire || now;
-    const base = (cur !== -1 && cur > now) ? cur : now;
-    newExp = base + kinfo.days * 86400;
-    label = `${kinfo.days} ngày`;
-  }
-
-  db.vip_keys[String(uid)] = {
-    key: keyCode, expire: newExp, days: kinfo.days,
-    activated: new Date().toLocaleString('vi')
-  };
-  db.key_pool[keyCode].used = true;
-  saveDB(db);
-  return { ok: true, msg: label, isFree };
-}
-
-function genKey(prefix, days) {
-  const hex = Array.from({length:12}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
-  return `${prefix}-${hex}-${days}D`;
-}
-function genFreeKey() {
-  const hex = Array.from({length:10}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
-  return `FREE-${hex}`;
-}
-function uuid8() {
-  return Math.random().toString(36).substr(2,8).toUpperCase();
-}
-
-function getBalance(uid) {
-  return (loadDB().balance || {})[String(uid)] || 0;
-}
-function fmtMoney(n) { return n.toLocaleString('vi') + 'đ'; }
-
-// ══════════════════════════════════════
-//   API HELPERS
-// ══════════════════════════════════════
-async function tgRequest(method, params) {
-  const url = `https://api.telegram.org/bot${BOT_TOKEN}/${method}`;
-  try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    });
-    return await r.json();
-  } catch(e) { return { ok: false, error: e.message }; }
-}
-
-async function convertToken(raw) {
-  if (!raw) return raw;
-  // EAT link
-  if (raw.includes('eat=') || raw.startsWith('http')) {
-    try {
-      const url = raw.startsWith('http') ? raw : 'https://x?' + raw;
-      const eat = new URL(url).searchParams.get('eat');
-      if (eat) raw = eat;
-    } catch(e) {}
-  }
-  // access_token param
-  if (raw.includes('access_token=')) {
-    try {
-      const p = new URLSearchParams(raw.includes('?') ? raw.split('?')[1] : raw);
-      const at = p.get('access_token');
-      if (at) return at;
-    } catch(e) {}
-  }
-  // Thử convert EAT → access_token qua API
-  try {
-    const r = await fetch(`https://api-otrss.garena.com/support/callback/?access_token=${encodeURIComponent(raw)}`, {
-      method: 'GET', redirect: 'manual'
-    });
-    // Nếu redirect có access_token
-    const loc = r.headers.get('location') || '';
-    if (loc.includes('access_token=')) {
-      const p = new URL(loc).searchParams.get('access_token');
-      if (p) return p;
-    }
-  } catch(e) {}
-  return raw;
-}
-
-async function garenaPost(endpoint, data) {
-  const body = new URLSearchParams(data).toString();
-  const r = await fetch(`${GARENA_BIND_URL}${endpoint}`, {
-    method: 'POST',
-    headers: GARENA_BIND_HEADERS,
-    body
-  });
-  return await r.json();
-}
-
-// ══════════════════════════════════════
-//   INIT
-// ══════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  const tg = window.Telegram?.WebApp;
-  if (!tg || !tg.initData) {
-    // Không phải Telegram Mini App → blocked
-    document.getElementById('blocked-screen').style.display = 'flex';
+function init() {
+  // Chặn nếu không phải Telegram
+  if (!tg || !tg.initData || tg.initData === '') {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('blocked').style.display = 'block';
     return;
   }
 
-  tg.ready();
+  // Expand full screen
   tg.expand();
+  tg.setHeaderColor('#06090d');
+  tg.setBackgroundColor('#06090d');
 
-  tgUser = tg.initDataUnsafe?.user;
-  if (!tgUser) {
-    document.getElementById('blocked-screen').style.display = 'flex';
+  // Lấy thông tin user
+  const user = tg.initDataUnsafe?.user;
+  if (!user) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('blocked').style.display = 'block';
     return;
   }
 
-  document.getElementById('blocked-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+  currentUser = user;
+  isAdmin = (user.id === ADMIN_ID);
 
-  // Đăng ký user vào DB
-  const db = loadDB();
-  const uid = String(tgUser.id);
-  if (!db.users[uid]) {
-    db.users[uid] = {
-      first_name: tgUser.first_name,
-      username: tgUser.username || '',
-      joined: new Date().toLocaleString('vi')
-    };
-    saveDB(db);
+  // Cập nhật UI
+  const name = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+  document.getElementById('headerName').textContent = name.slice(0,12);
+  document.getElementById('avatarLetter').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileId').textContent = 'ID: ' + user.id;
+  document.getElementById('profileEmoji').textContent = isAdmin ? '👑' : '👤';
+
+  // Hiện nút admin nếu là admin
+  if (isAdmin) {
+    document.getElementById('adminNavBtn').style.display = 'flex';
   }
 
-  renderHeader();
-  renderHomePage();
-  renderShopList();
-  renderEventsPage();
+  // Ẩn loading, hiện app
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }, 800);
 
-  // Nội dung chuyển khoản
-  document.getElementById('nap-content').value = `NAP ${uid}`;
-});
-
-function renderHeader() {
-  if (!tgUser) return;
-  const name = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-  const uid = String(tgUser.id);
-  const vip = checkVIP(uid);
-  const bal = getBalance(uid);
-
-  document.getElementById('h-avatar').textContent = name[0] || '?';
-  document.getElementById('h-name').textContent = name;
-  document.getElementById('h-id').textContent = `ID: ${uid}`;
-
-  const badge = document.getElementById('h-badge');
-  if (uid === String(ADMIN_TG_ID)) {
-    badge.className = 'header-badge badge-admin';
-    badge.textContent = '👑 Admin';
-  } else if (vip.ok) {
-    badge.className = 'header-badge badge-vip';
-    badge.textContent = '💎 VIP';
-  } else {
-    badge.className = 'header-badge badge-free';
-    badge.textContent = 'Miễn phí';
-  }
+  // Load dữ liệu
+  loadUserData();
 }
 
-function renderHomePage() {
-  if (!tgUser) return;
-  const uid = String(tgUser.id);
-  const name = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-  const vip = checkVIP(uid);
-  const bal = getBalance(uid);
-
-  document.getElementById('p-name').textContent = name;
-  document.getElementById('p-id').textContent = uid;
-  document.getElementById('p-balance').textContent = fmtMoney(bal);
-  document.getElementById('p-vip').textContent = vip.ok ? `✅ ${vip.text}` : '❌ Chưa có';
-
-  document.getElementById('vip-icon').textContent = vip.ok ? '✅' : '❌';
-  document.getElementById('vip-text').textContent = vip.ok ? `VIP còn: ${vip.text}` : 'Chưa có VIP';
-  document.getElementById('vip-time-text').textContent = vip.ok ? 'Đang hoạt động' : 'Mua VIP để dùng tính năng đầy đủ';
-
-  // Admin button
-  if (String(tgUser.id) === String(ADMIN_TG_ID)) {
-    document.getElementById('admin-btn-wrap').style.display = 'block';
-  }
-}
-
-function renderVIPPage() {
-  if (!tgUser) return;
-  const uid = String(tgUser.id);
-  const vip = checkVIP(uid);
-  document.getElementById('vip-big-icon').textContent = vip.ok ? '✅' : '❌';
-  document.getElementById('vip-big-text').textContent = vip.ok ? `VIP còn ${vip.text}` : 'Chưa có VIP';
-  document.getElementById('vip-big-time').textContent = vip.ok ? 'Đang hoạt động' : 'Kích hoạt key hoặc mua VIP bên dưới';
-}
-
-function renderShopList() {
-  const db = loadDB();
-  const shop = db.shop || DEFAULT_SHOP;
-  const uid = tgUser ? String(tgUser.id) : '';
-  const bal = getBalance(uid);
-  const container = document.getElementById('shop-list');
-  if (!Object.keys(shop).length) {
-    container.innerHTML = '<div class="card" style="text-align:center;color:var(--text2)">Chưa có gói nào</div>';
-    return;
-  }
-  container.innerHTML = Object.entries(shop).map(([k, item]) => {
-    const canBuy = bal >= item.price;
-    return `
-      <div class="key-card" onclick="doBuyVIP('${k}')">
-        <span class="key-price">${fmtMoney(item.price)}</span>
-        <div class="key-label">${canBuy ? '✅' : '❌'} ${item.label}</div>
-        <div class="key-meta">${item.desc} — ${item.days} ngày</div>
-      </div>`;
-  }).join('');
-}
-
-function renderEventsPage() {
-  const db = loadDB();
-  const events = db.events || {};
-  const active = Object.entries(events).filter(([,v]) => v.active);
-  const container = document.getElementById('events-list');
-  if (!active.length) {
-    container.innerHTML = '<div class="card" style="text-align:center;color:var(--text2)">📭 Hiện không có event nào!</div>';
-    return;
-  }
-  container.innerHTML = active.map(([eid, ev]) => {
-    const uid = tgUser ? String(tgUser.id) : '';
-    const sub = (ev.submissions || {})[uid];
-    const statusMap = { pending:'⏳ Chờ duyệt', approved:'✅ Đã duyệt', rejected:'❌ Bị từ chối' };
-    const status = sub ? (statusMap[sub.status] || 'Đã tham gia') : 'Chưa tham gia';
-    const reward = ev.reward_type === 'key' ? `${ev.reward_value} ngày VIP` : fmtMoney(ev.reward_value);
-    return `
-      <div class="card">
-        <div class="card-title">🎉 ${ev.title}</div>
-        <div class="card-row"><span class="card-row-label">Mô tả</span><span class="card-row-value">${ev.desc}</span></div>
-        <div class="card-row"><span class="card-row-label">🎁 Thưởng</span><span class="card-row-value" style="color:var(--gold)">${reward}</span></div>
-        <div class="card-row"><span class="card-row-label">Trạng thái</span><span class="card-row-value">${status}</span></div>
-        ${!sub ? `<button class="btn btn-success btn-sm" onclick="joinEvent('${eid}')">🎯 Tham gia</button>` : ''}
-      </div>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════
-//   NAVIGATION
-// ══════════════════════════════════════
-function goPage(name, btn) {
+// ════════════════════════════════════════
+//         NAVIGATION
+// ════════════════════════════════════════
+function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  btn.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bottom-btn').forEach(b => b.classList.remove('active'));
 
-  if (name === 'vip') { renderVIPPage(); renderShopList(); }
-  if (name === 'home') { renderHomePage(); }
-  if (name === 'events') { renderEventsPage(); }
-  if (name === 'admin') { renderAdminPage(); }
-}
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
 
-// ══════════════════════════════════════
-//   TOOLS TAB
-// ══════════════════════════════════════
-function switchToolTab(tab) {
-  ['ff-info','check-mail','check-social','mail-ops','logout'].forEach(t => {
-    document.getElementById('tool-' + t).style.display = t === tab ? 'block' : 'none';
+  // Highlight nav
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.getAttribute('onclick')?.includes("'" + name + "'")) b.classList.add('active');
   });
-  document.querySelectorAll('#tools-tab-row .tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['ff-info','check-mail','check-social','mail-ops','logout'][i] === tab);
+  document.querySelectorAll('.bottom-btn').forEach(b => {
+    if (b.getAttribute('onclick')?.includes("'" + name + "'")) b.classList.add('active');
   });
+
+  if (name === 'shop') loadShopBalance();
+  if (name === 'admin' && isAdmin) loadAdminData();
 }
 
-function switchMailOpsTab(tab) {
-  ['mail-info','send-otp','verify-otp','bind-mail','unbind','cancel-req'].forEach(t => {
-    const el = document.getElementById('mailops-' + t);
-    if (el) el.style.display = t === tab ? 'block' : 'none';
-  });
-  const tabs = ['mail-info','send-otp','verify-otp','bind-mail','unbind','cancel-req'];
-  document.querySelectorAll('#tool-mail-ops .tab-row:first-child .tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', tabs[i] === tab);
-  });
+// ════════════════════════════════════════
+//         LOAD USER DATA (Mock)
+// ════════════════════════════════════════
+function loadUserData() {
+  // Trong thực tế gọi API backend
+  // Ở đây hiển thị demo data
+  document.getElementById('statUsers').textContent = '—';
+  document.getElementById('statVip').textContent   = '—';
+  document.getElementById('statSpam').textContent  = '0';
+  document.getElementById('statKeys').textContent  = '—';
+
+  document.getElementById('balance').textContent  = '0đ';
+  document.getElementById('shopBalance').textContent = '0đ';
+  document.getElementById('vipStatus').textContent = '❌ Chưa có';
+  document.getElementById('vipLeft').textContent   = '—';
 }
 
-function switchUnbindTab(tab) {
-  document.getElementById('unbind-req').style.display = tab === 'req' ? 'block' : 'none';
-  document.getElementById('unbind-verify').style.display = tab === 'verify' ? 'block' : 'none';
+function loadShopBalance() {
+  document.getElementById('shopBalance').textContent =
+    document.getElementById('balance').textContent;
 }
 
-// ══════════════════════════════════════
-//   FF INFO
-// ══════════════════════════════════════
-async function doFFInfo() {
-  const uid = document.getElementById('ff-uid-input').value.trim();
-  if (!uid) { showToast('Nhập UID Free Fire trước!'); return; }
-  const btn = document.getElementById('ff-info-btn-text');
-  const res = document.getElementById('ff-info-result');
-  btn.innerHTML = '<span class="loading-spin"></span> Đang tra cứu...';
-  res.className = 'result-box';
-  try {
-    const r = await fetch(`https://info-free-fire-main-manhdung.vercel.app/api/check?uid=${uid}&region=VN`);
-    const d = await r.json();
-    if (!d || !d.data) { showResult(res,'❌ Không tìm thấy UID này!','err'); return; }
-    const bi = d.data.basicInfo || {};
-    const cl = d.data.clanBasicInfo || {};
-    const pet = d.data.petInfo || {};
-    const si = d.data.socialInfo || {};
-    const cs = d.data.creditScoreInfo || {};
-    const rankMap = {200:'Đồng',201:'Bạc',202:'Vàng',203:'Bạch Kim',204:'Kim Cương',205:'Heroic',206:'Grand Master',220:'Cao Thủ',221:'Thách Đấu'};
-    const getRank = v => rankMap[Math.floor(v/100)*100] || `Rank ${v}`;
-    const gender = si.gender === 'Gender_FEMALE' ? '👩 Nữ' : '👨 Nam';
-    const clan = cl.clanName || 'Không có';
-    const petName = pet.name || 'Không có';
-    showResult(res,
-      `┌───⭓ THÔNG TIN NICK FF\n│\n` +
-      `│  👤  Nick     :  ${bi.nickname||'?'}\n` +
-      `│  🆔  UID      :  ${bi.accountId||'?'}\n` +
-      `│  🌍  Region   :  ${bi.region||'VN'}\n` +
-      `│  ⚡  Level    :  ${bi.level||'?'}\n` +
-      `│  ❤️  Lượt thích: ${(bi.liked||0).toLocaleString('vi')}\n` +
-      `│  🏆  BR Rank  :  ${getRank(bi.rank||0)}\n` +
-      `│  🎯  CS Rank  :  ${getRank(bi.csRank||0)}\n` +
-      `│  ${gender}  Giới tính\n` +
-      `│  🏰  Guild    :  ${clan}\n` +
-      `│  🐾  Pet      :  ${petName}\n` +
-      `│  ⭐  Credit   :  ${cs.creditScore||'?'}\n` +
-      `│  🎮  Version  :  ${bi.releaseVersion||'?'}\n` +
-      `└──────────────────`,'ok');
-  } catch(e) {
-    showResult(res, `❌ Lỗi: ${e.message}`, 'err');
-  }
-  btn.textContent = '🔍 Tra cứu';
+// ════════════════════════════════════════
+//         ACTIONS
+// ════════════════════════════════════════
+function openTelegram(cmd) {
+  const url = cmd
+    ? `https://t.me/${BOT_USERNAME}?start=${cmd}`
+    : `https://t.me/${BOT_USERNAME}`;
+  tg.openTelegramLink ? tg.openTelegramLink(url) : window.open(url, '_blank');
 }
 
-// ══════════════════════════════════════
-//   CHECK MAIL
-// ══════════════════════════════════════
-async function doCheckMail() {
-  const raw = document.getElementById('cm-token').value.trim();
-  if (!raw) { showToast('Nhập token trước!'); return; }
-  const btn = document.getElementById('cm-btn-text');
-  const res = document.getElementById('cm-result');
-  btn.innerHTML = '<span class="loading-spin"></span> Đang kiểm tra...';
-  try {
-    const token = await convertToken(raw);
-    const r = await fetch(`https://luanori-check-mail.vercel.app/bind_info?access_token=${token}`);
-    const d = await r.json();
-    if (d.status !== 'success') { showResult(res,'⚠️ Token không hợp lệ hoặc lỗi API!','err'); btn.textContent='🔍 Kiểm tra'; return; }
-    const data = d.data || {};
-    const raw2 = data.raw_response || {};
-    const email = data.current_email || '[ Trống ]';
-    const mobile = raw2.mobile || '[ Trống ]';
-    showResult(res,
-      `┌───⭓ THÔNG TIN TÀI KHOẢN\n│\n` +
-      `│  📩  Email  :  ${email}\n` +
-      `│  📱  SĐT    :  ${mobile}\n` +
-      `└──────────────────`, 'ok');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '🔍 Kiểm tra';
-}
-
-// ══════════════════════════════════════
-//   CHECK SOCIAL
-// ══════════════════════════════════════
-async function doCheckSocial() {
-  const raw = document.getElementById('mxh-token').value.trim();
-  if (!raw) { showToast('Nhập token trước!'); return; }
-  const btn = document.getElementById('mxh-btn-text');
-  const res = document.getElementById('mxh-result');
-  btn.innerHTML = '<span class="loading-spin"></span> Đang kiểm tra...';
-  try {
-    const token = await convertToken(raw);
-    const pMap = {1:'Garena',3:'Facebook',5:'Google',8:'VK',10:'Apple'};
-    const r = await fetch(`${GARENA_BIND_URL}/bind/app/platform/info/get?access_token=${token}`, { headers: GARENA_HEADERS });
-    const d = await r.json();
-    const accs = d.bounded_accounts || [];
-    if (!accs.length) { showResult(res,'🔗 Tài khoản trắng — Chưa liên kết MXH nào','ok'); btn.textContent='🔍 Kiểm tra'; return; }
-    let txt = '🔗 DANH SÁCH LIÊN KẾT\n├──────────────────\n';
-    accs.forEach(a => {
-      const u = a.user_info || {};
-      txt += `🌐 ${pMap[a.platform]||'N/A'}\n    👤 ${u.nickname}  |  🆔 ${a.uid}\n`;
-    });
-    showResult(res, txt, 'ok');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '🔍 Kiểm tra';
-}
-
-// ══════════════════════════════════════
-//   MAIL INFO (VIP)
-// ══════════════════════════════════════
-async function doMailInfo() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('mi-token').value.trim();
-  if (!raw) { showToast('Nhập token!'); return; }
-  const btn = document.getElementById('mi-btn');
-  const res = document.getElementById('mi-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const r = await fetch(`https://luanori-check-mail.vercel.app/bind_info?access_token=${token}`);
-    const d = await r.json();
-    if (d.status !== 'success') { showResult(res,'❌ Token không hợp lệ!','err'); btn.textContent='🔍 Xem thông tin bind'; return; }
-    const data = d.data || {};
-    const raw2 = data.raw_response || {};
-    const email = data.current_email || '[ Trống ]';
-    const mobile = raw2.mobile || '[ Trống ]';
-    const pend = data.pending_email || '[ Không có ]';
-    const countdown = data.countdown_human || '0 Sec';
-    showResult(res,
-      `┌───⭓ THÔNG TIN BIND\n│\n` +
-      `│  📩  Email hiện tại  :  ${email}\n` +
-      `│  📩  Email chờ đổi  :  ${pend}\n` +
-      `│  📱  SĐT             :  ${mobile}\n` +
-      `│  ⏳  Đếm ngược       :  ${countdown}\n` +
-      `└──────────────────`, 'ok');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '🔍 Xem thông tin bind';
-}
-
-// ══════════════════════════════════════
-//   SEND OTP
-// ══════════════════════════════════════
-async function doSendOTP() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('sotp-token').value.trim();
-  const email = document.getElementById('sotp-email').value.trim();
-  if (!raw || !email) { showToast('Nhập token và email!'); return; }
-  const btn = document.getElementById('sotp-btn');
-  const res = document.getElementById('sotp-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const d = await garenaPost('/game/account_security/bind:send_otp', {
-      email, locale:'vi_VN', region:'VN', app_id:'100067', access_token: token
-    });
-    const ok = d.result === 0;
-    const msg = ok ? 'Gửi thành công! Kiểm tra hòm thư.' : (d.error_msg || JSON.stringify(d));
-    showResult(res,
-      `┌───⭓ GỬI OTP\n` +
-      `│  📩  Email  :  ${email}\n` +
-      `│  ${ok?'✅':'❌'}  ${msg}\n` +
-      `└──────────────────`, ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '📨 Gửi OTP';
-}
-
-// ══════════════════════════════════════
-//   VERIFY OTP
-// ══════════════════════════════════════
-async function doVerifyOTP() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('votp-token').value.trim();
-  const email = document.getElementById('votp-email').value.trim();
-  const otp = document.getElementById('votp-otp').value.trim();
-  if (!raw || !email || !otp) { showToast('Nhập đủ thông tin!'); return; }
-  const btn = document.getElementById('votp-btn');
-  const res = document.getElementById('votp-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const d = await garenaPost('/game/account_security/bind:verify_otp', {
-      email, app_id:'100067', access_token: token, otp
-    });
-    const ok = d.result === 0;
-    verifierToken = ok ? (d.verifier_token || null) : null;
-    let txt = `┌───⭓ XÁC THỰC OTP\n│  ${ok?'✅':'❌'}  ${ok?'OTP hợp lệ!':(d.error_msg||JSON.stringify(d))}\n`;
-    if (ok && verifierToken) txt += `│  📌  Dùng tab "Liên kết" để hoàn tất\n`;
-    txt += `└──────────────────`;
-    showResult(res, txt, ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '✅ Xác thực OTP';
-}
-
-// ══════════════════════════════════════
-//   BIND MAIL
-// ══════════════════════════════════════
-async function doBindMail() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('bm-token').value.trim();
-  const email = document.getElementById('bm-email').value.trim();
-  const pass = document.getElementById('bm-pass').value.trim();
-  if (!raw || !email || !pass) { showToast('Nhập đủ thông tin!'); return; }
-  if (!verifierToken) { showToast('Chạy Gửi OTP và Xác thực OTP trước!'); return; }
-  const btn = document.getElementById('bm-btn');
-  const res = document.getElementById('bm-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    // Hash mật khẩu SHA256
-    const msgBuffer = new TextEncoder().encode(pass);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashed = hashArray.map(b => b.toString(16).padStart(2,'0')).join('').toUpperCase();
-
-    const d = await garenaPost('/game/account_security/bind:create_bind_request', {
-      email, secondary_password: hashed, app_id:'100067',
-      verifier_token: verifierToken, access_token: token
-    });
-    const ok = d.result === 0;
-    if (ok) verifierToken = null;
-    showResult(res,
-      `┌───⭓ KẾT QUẢ LIÊN KẾT EMAIL\n│\n` +
-      `│  📩  Email  :  ${email}\n` +
-      `│  ${ok?'✅ Liên kết thành công!':'❌ ' + (d.error_msg||JSON.stringify(d))}\n` +
-      `└──────────────────`, ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '🔗 Liên kết Email';
-}
-
-// ══════════════════════════════════════
-//   UNBIND
-// ══════════════════════════════════════
-async function doUnbind() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('ub-token').value.trim();
-  const email = document.getElementById('ub-email').value.trim();
-  if (!raw || !email) { showToast('Nhập token và email!'); return; }
-  const btn = document.getElementById('ub-btn');
-  const res = document.getElementById('ub-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const r = await fetch('https://luanori-check-mail.vercel.app/unbind_request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_token: token, email })
-    });
-    const d = await r.json();
-    const ok = d.status === 'success';
-    showResult(res,
-      `┌───⭓ GỠ LIÊN KẾT\n│  ${ok?'✅':'❌'}  ${d.message||JSON.stringify(d)}\n└──────────────────`,
-      ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '🗑 Gỡ liên kết (gửi OTP)';
-}
-
-async function doUnbindOTP() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('ubv-token').value.trim();
-  const email = document.getElementById('ubv-email').value.trim();
-  const otp = document.getElementById('ubv-otp').value.trim();
-  if (!raw || !email || !otp) { showToast('Nhập đủ thông tin!'); return; }
-  const btn = document.getElementById('ubv-btn');
-  const res = document.getElementById('ubv-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const r = await fetch('https://luanori-check-mail.vercel.app/unbind_verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_token: token, email, otp })
-    });
-    const d = await r.json();
-    const ok = d.status === 'success';
-    showResult(res,
-      `┌───⭓ KẾT QUẢ GỠ LIÊN KẾT\n│  ${ok?'✅':'❌'}  ${d.message||JSON.stringify(d)}\n└──────────────────`,
-      ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '✅ Xác nhận gỡ';
-}
-
-// ══════════════════════════════════════
-//   CANCEL REQUEST
-// ══════════════════════════════════════
-async function doCancelReq() {
-  if (!checkVIPGuard()) return;
-  const raw = document.getElementById('cr-token').value.trim();
-  if (!raw) { showToast('Nhập token!'); return; }
-  const btn = document.getElementById('cr-btn');
-  const res = document.getElementById('cr-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const d = await garenaPost('/game/account_security/bind:cancel', {
-      app_id:'10007', access_token: token
-    });
-    const ok = d.result === 0;
-    showResult(res,
-      `┌───⭓ HỦY YÊU CẦU\n│  ${ok?'✅ Đã hủy thành công!':'❌ ' + JSON.stringify(d)}\n└──────────────────`,
-      ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '❌ Hủy yêu cầu đang chờ';
-}
-
-// ══════════════════════════════════════
-//   LOGOUT
-// ══════════════════════════════════════
-async function doLogout() {
-  const raw = document.getElementById('lo-token').value.trim();
-  if (!raw) { showToast('Nhập token!'); return; }
-  const btn = document.getElementById('lo-btn');
-  const res = document.getElementById('lo-result');
-  btn.innerHTML = '<span class="loading-spin"></span>';
-  try {
-    const token = await convertToken(raw);
-    const d = await garenaPost('/oauth/v2/token/invalidate', {
-      access_token: token, app_id:'100067'
-    });
-    const ok = d.result === 0 || d.error === 'success';
-    showResult(res,
-      `┌───⭓ ĐĂNG XUẤT\n│  ${ok?'✅ Đăng xuất thành công!':'❌ ' + JSON.stringify(d)}\n└──────────────────`,
-      ok ? 'ok' : 'err');
-  } catch(e) { showResult(res, `❌ Lỗi: ${e.message}`, 'err'); }
-  btn.textContent = '🚪 Đăng xuất';
-}
-
-// ══════════════════════════════════════
-//   VIP / ACTIVATE KEY
-// ══════════════════════════════════════
-function doActivateKey() {
-  const keyCode = document.getElementById('activate-key-input').value.trim();
-  if (!keyCode) { showToast('Nhập key trước!'); return; }
-  const uid = String(tgUser.id);
-  const db = loadDB();
-
-  // Kiểm tra key free hết hạn
-  const pool = db.key_pool || {};
-  if (pool[keyCode] && pool[keyCode].free && (Date.now()/1000) > (pool[keyCode].expire_abs || 0)) {
-    showResult(document.getElementById('activate-result'), '❌ Key free đã hết thời gian!', 'err');
-    return;
-  }
-
-  const result = activateKey(uid, keyCode);
-  const res = document.getElementById('activate-result');
-  if (!result.ok) {
-    showResult(res, `❌ ${result.msg}`, 'err');
-    return;
-  }
-  showResult(res,
-    `┌───⭓ KÍCH HOẠT THÀNH CÔNG\n│\n` +
-    `│  🔑  Key   :  ${keyCode}\n` +
-    `│  ⭐  Loại  :  ${result.isFree ? '🎁 Free (1 giờ)' : '💎 VIP (' + result.msg + ')'}\n` +
-    `└──────────────────\n` +
-    (result.isFree ? '⚠️ Key free không dùng /spam' : '✅ Bạn có thể dùng Spam Log!'),
-    'ok');
-  renderHeader();
-  renderVIPPage();
-}
-
-// ══════════════════════════════════════
-//   MUA VIP
-// ══════════════════════════════════════
-async function doBuyVIP(daysKey) {
-  const uid = String(tgUser.id);
-  const db = loadDB();
-  const shop = db.shop || DEFAULT_SHOP;
-  const item = shop[daysKey];
-  if (!item) { showToast('Gói không tồn tại!'); return; }
-  const price = item.price;
-  const bal = getBalance(uid);
-  if (bal < price) {
-    showToast(`❌ Không đủ tiền! Cần ${fmtMoney(price)}, có ${fmtMoney(bal)}`);
-    return;
-  }
-  // Trừ tiền
-  db.balance[uid] = (db.balance[uid] || 0) - price;
-  // Tạo key
-  const key = genKey('VIP', item.days);
-  db.key_pool[key] = { days: item.days, free: false, used: false, created: new Date().toLocaleString('vi') };
-  saveDB(db);
-  // Kích hoạt
-  const r = activateKey(uid, key);
-  renderHeader(); renderVIPPage(); renderShopList();
-  showToast(`✅ Mua thành công! ${item.label} — ${r.msg}`);
-}
-
-// ══════════════════════════════════════
-//   GIFTCODE
-// ══════════════════════════════════════
-function doGiftcode() {
-  const code = document.getElementById('gift-input').value.trim().toUpperCase();
-  const uid = String(tgUser.id);
-  const res = document.getElementById('gift-result');
-  if (!code) { showToast('Nhập mã giftcode!'); return; }
-  const db = loadDB();
-  const gc = (db.giftcodes || {})[code];
-  if (!gc) { showResult(res,'❌ Giftcode không hợp lệ!','err'); return; }
-  if ((gc.used_by || []).includes(uid)) { showResult(res,'⚠️ Bạn đã dùng code này rồi!','err'); return; }
-  if (gc.uses >= gc.max_uses) { showResult(res,'❌ Giftcode đã hết lượt dùng!','err'); return; }
-
-  let rewardMsg;
-  if (gc.reward_type === 'key') {
-    const key = genKey('VIP', gc.reward_value);
-    db.key_pool[key] = { days: gc.reward_value, free: false, used: false, created: new Date().toLocaleString('vi') };
-    saveDB(db);
-    activateKey(uid, key);
-    rewardMsg = `💎 VIP ${gc.reward_value} ngày đã kích hoạt!`;
-  } else {
-    db.balance[uid] = (db.balance[uid] || 0) + gc.reward_value;
-    rewardMsg = `💰 +${fmtMoney(gc.reward_value)} vào tài khoản!`;
-  }
-
-  gc.uses += 1;
-  if (!gc.used_by) gc.used_by = [];
-  gc.used_by.push(uid);
-  db.giftcodes[code] = gc;
-  saveDB(db);
-
-  showResult(res,
-    `┌───⭓ 🎁 GIFTCODE THÀNH CÔNG\n│\n` +
-    `│  🔑  Code    :  ${code}\n` +
-    `│  ${rewardMsg}\n` +
-    `│  🔢  Còn lại :  ${gc.max_uses - gc.uses} lượt\n` +
-    `└──────────────────`, 'ok');
-  renderHeader();
-}
-
-// ══════════════════════════════════════
-//   SPAM
-// ══════════════════════════════════════
-async function doStartSpam() {
-  const uid = String(tgUser.id);
-  const vip = checkVIP(uid);
-  if (!vip.ok) { showToast('❌ Chức năng này chỉ dành cho VIP!'); return; }
-  const db = loadDB();
-  const vkInfo = (db.vip_keys || {})[uid];
-  const kinfo = (db.key_pool || {})[(vkInfo||{}).key||''] || {};
-  if (kinfo.free) { showToast('❌ Key free không dùng được Spam!'); return; }
-  if (!db.settings.bot_on) { showToast('⚠️ Bot đang tắt!'); return; }
-  if (!db.settings.spam_on) { showToast('⚠️ Spam đang bị tắt bởi admin!'); return; }
-  if (db.settings.maintenance) { showToast('🔧 Đang bảo trì!'); return; }
-
-  const raw = document.getElementById('spam-token').value.trim();
-  if (!raw) { showToast('Nhập Access Token!'); return; }
-
-  const btn = document.getElementById('spam-start-btn');
-  btn.innerHTML = '<span class="loading-spin"></span> Đang xử lý...';
-  addSpamLog('⏳ Đang nhận dạng token...');
-
-  try {
-    const token = await convertToken(raw);
-    addSpamLog('⏳ Đang đăng nhập FF...');
-
-    // Gọi thông tin user qua Garena để lấy info (simulated đúng với bot)
-    // Bot dùng FreeFireAPI socket, trình duyệt không thể dùng raw socket
-    // Thay bằng cách gọi API check info
-    addSpamLog('🟢 Kết nối thành công!');
-
-    spamSessionId = uuid8();
-    spamCount = 0;
-    spamActive = true;
-
-    document.getElementById('spam-status-card').style.display = 'block';
-    document.getElementById('spam-status-val').innerHTML = '<span class="dot dot-green"></span>Đang chạy';
-    document.getElementById('spam-nick-val').textContent = 'Đã kết nối';
-    document.getElementById('spam-server-val').textContent = 'Server FF VN';
-    document.getElementById('spam-count-val').textContent = '0 gói';
-    document.getElementById('spam-session-val').textContent = spamSessionId;
-
-    addSpamLog(`🔖 Session: ${spamSessionId}`);
-    addSpamLog('📡 Gửi packet mỗi 50 giây...');
-
-    // Simulate spam (trình duyệt không thể dùng TCP socket thô)
-    spamTimer = setInterval(() => {
-      const vipNow = checkVIP(uid);
-      if (!vipNow.ok) {
-        clearInterval(spamTimer);
-        spamActive = false;
-        addSpamLog('⛔ Dừng — VIP hết hạn');
-        document.getElementById('spam-status-val').innerHTML = '<span class="dot dot-red"></span>Đã dừng';
-        return;
-      }
-      spamCount++;
-      addSpamLog(`✅ Gói #${spamCount} gửi thành công`);
-      document.getElementById('spam-count-val').textContent = `${spamCount} gói`;
-    }, 50000);
-
-  } catch(e) {
-    addSpamLog(`❌ Lỗi: ${e.message}`);
-  }
-  btn.textContent = '🚀 Bắt đầu Spam';
-}
-
-function doStopSpam() {
-  if (!spamActive) { showToast('Không có phiên spam nào!'); return; }
-  clearInterval(spamTimer);
-  spamActive = false;
-  addSpamLog('🔴 Đã dừng phiên spam');
-  document.getElementById('spam-status-val').innerHTML = '<span class="dot dot-red"></span>Đã dừng';
-  showToast('✅ Đã dừng spam');
-}
-
-function addSpamLog(msg) {
-  const log = document.getElementById('spam-log');
-  const time = new Date().toLocaleTimeString('vi');
-  const line = `[${time}] ${msg}\n`;
-  if (log.textContent === 'Chưa có log...') log.textContent = '';
-  log.textContent += line;
-  log.scrollTop = log.scrollHeight;
-}
-
-// ══════════════════════════════════════
-//   EVENT JOIN
-// ══════════════════════════════════════
-function joinEvent(eid) {
-  const uid = String(tgUser.id);
-  const db = loadDB();
-  const ev = (db.events || {})[eid];
-  if (!ev || !ev.active) { showToast('Event không còn hoạt động!'); return; }
-  if ((ev.submissions || {})[uid]) { showToast('Bạn đã tham gia rồi!'); return; }
-  if (!ev.submissions) ev.submissions = {};
-  ev.submissions[uid] = {
-    status: 'pending',
-    username: tgUser.username || tgUser.first_name,
-    joined: new Date().toLocaleString('vi')
-  };
-  db.events[eid] = ev;
-  saveDB(db);
-  renderEventsPage();
-  showToast('✅ Đã tham gia! Chờ admin duyệt.');
-}
-
-// ══════════════════════════════════════
-//   VIP GUARD
-// ══════════════════════════════════════
-function checkVIPGuard() {
-  const uid = String(tgUser?.id || '');
-  const db = loadDB();
-  const vip = checkVIP(uid);
-  if (!vip.ok) { showToast('❌ Chức năng này chỉ dành cho VIP!'); return false; }
-  const vkInfo = (db.vip_keys || {})[uid];
-  const kinfo = (db.key_pool || {})[(vkInfo||{}).key||''] || {};
-  if (kinfo.free) { showToast('❌ Key free không dùng được lệnh này!'); return false; }
-  return true;
-}
-
-// ══════════════════════════════════════
-//   ADMIN LOGIN
-// ══════════════════════════════════════
-function openAdminLogin() {
-  document.getElementById('admin-login-overlay').classList.add('open');
-  setTimeout(() => document.getElementById('admin-pw-input').focus(), 100);
-}
-function closeAdminLogin() {
-  document.getElementById('admin-login-overlay').classList.remove('open');
-  document.getElementById('admin-pw-input').value = '';
-  document.getElementById('admin-login-err').textContent = '';
-}
-function doAdminLogin() {
-  const pw = document.getElementById('admin-pw-input').value;
-  if (pw !== ADMIN_PW) {
-    document.getElementById('admin-login-err').textContent = '❌ Mật khẩu không đúng!';
-    return;
-  }
-  isAdmin = true;
-  closeAdminLogin();
-  // Thêm tab admin vào bottom nav
-  const nav = document.querySelector('.bottom-nav');
-  if (!document.getElementById('nav-admin-btn')) {
-    const adminBtn = document.createElement('button');
-    adminBtn.className = 'nav-item';
-    adminBtn.id = 'nav-admin-btn';
-    adminBtn.innerHTML = '<span class="nav-icon">👑</span><span>Admin</span>';
-    adminBtn.onclick = function() { goPage('admin', this); };
-    nav.appendChild(adminBtn);
-  }
-  showToast('✅ Đăng nhập Admin thành công!');
-  // Tự chuyển sang trang admin
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('nav-admin-btn').classList.add('active');
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-admin').classList.add('active');
-  renderAdminPage();
-}
-function adminLogout() {
-  isAdmin = false;
-  const btn = document.getElementById('nav-admin-btn');
-  if (btn) btn.remove();
-  goPage('home', document.querySelector('.nav-item'));
-  document.querySelector('.nav-item').classList.add('active');
-  showToast('Đã đăng xuất Admin');
-}
-
-// ══════════════════════════════════════
-//   ADMIN PAGE
-// ══════════════════════════════════════
-function renderAdminPage() {
-  if (!isAdmin) return;
-  const db = loadDB();
-  const now = Date.now() / 1000;
-  const activeVIP = Object.values(db.vip_keys || {}).filter(v => v.expire === -1 || v.expire > now).length;
-  document.getElementById('adm-users').textContent = Object.keys(db.users || {}).length;
-  document.getElementById('adm-vip').textContent = activeVIP;
-  document.getElementById('adm-keys').textContent = Object.keys(db.key_pool || {}).length;
-  document.getElementById('adm-banned').textContent = (db.banned || []).length;
-
-  const s = db.settings;
-  document.getElementById('adm-toggle-bot').checked = !!s.bot_on;
-  document.getElementById('adm-toggle-spam').checked = !!s.spam_on;
-  document.getElementById('adm-toggle-maint').checked = !!s.maintenance;
-  document.getElementById('adm-toggle-freekey').checked = !!s.free_key_on;
-}
-
-function adminToggle(key, val) {
-  const db = loadDB();
-  db.settings[key] = val;
-  saveDB(db);
-  showToast(`✅ ${key}: ${val ? 'BẬT' : 'TẮT'}`);
-}
-
-function adminCreateKey() {
-  const days = parseInt(document.getElementById('adm-key-days').value) || 0;
-  const qty = parseInt(document.getElementById('adm-key-qty').value) || 1;
-  if (!days) { showToast('Nhập số ngày!'); return; }
-  const db = loadDB();
-  const keys = [];
-  for (let i = 0; i < Math.min(qty, 20); i++) {
-    const key = genKey('VIP', days);
-    db.key_pool[key] = { days, free: false, used: false, created: new Date().toLocaleString('vi') };
-    keys.push(key);
-  }
-  saveDB(db);
-  const res = document.getElementById('adm-key-result');
-  showResult(res,
-    `┌───⭓ ĐÃ TẠO ${keys.length} KEY VIP\n│\n` +
-    keys.map(k => `│  🔑  ${k}`).join('\n') +
-    `\n│  📅  Hạn: ${days} ngày\n└──────────────────`, 'ok');
-  renderAdminPage();
-}
-
-function adminListVIP() {
-  const db = loadDB();
-  const vk = db.vip_keys || {};
-  const res = document.getElementById('adm-vip-list');
-  if (!Object.keys(vk).length) { showResult(res, '📭 Chưa có VIP user nào!', 'err'); return; }
-  const now = Date.now() / 1000;
-  const lines = Object.entries(vk).map(([uid, info]) => {
-    const left = info.expire === -1 ? '♾️ Vĩnh viễn' : (info.expire > now ? `${Math.floor((info.expire-now)/3600)}h còn` : '❌ Hết hạn');
-    const uname = (db.users[uid] || {}).username || uid;
-    return `✅ @${uname} (${uid})\n    🔑 ${info.key}\n    ⏳ ${left}`;
-  }).join('\n───\n');
-  showResult(res, `┌───⭓ DANH SÁCH VIP\n│\n${lines}\n└──────────────────`, 'ok');
-}
-
-function adminBan() {
-  const tid = document.getElementById('adm-ban-id').value.trim();
-  if (!tid) { showToast('Nhập ID!'); return; }
-  const db = loadDB();
-  if (!db.banned.includes(tid)) db.banned.push(tid);
-  saveDB(db);
-  showResult(document.getElementById('adm-ban-result'), `✅ Đã ban ID: ${tid}`, 'ok');
-  renderAdminPage();
-}
-function adminUnban() {
-  const tid = document.getElementById('adm-ban-id').value.trim();
-  if (!tid) { showToast('Nhập ID!'); return; }
-  const db = loadDB();
-  db.banned = db.banned.filter(b => b !== tid);
-  saveDB(db);
-  showResult(document.getElementById('adm-ban-result'), `✅ Đã unban ID: ${tid}`, 'ok');
-  renderAdminPage();
-}
-function adminDelVIP() {
-  const tid = document.getElementById('adm-delvip-id').value.trim();
-  if (!tid) { showToast('Nhập ID!'); return; }
-  const db = loadDB();
-  if (db.vip_keys[tid]) {
-    delete db.vip_keys[tid];
-    saveDB(db);
-    showResult(document.getElementById('adm-delvip-result'), `✅ Đã xóa VIP của ID: ${tid}`, 'ok');
-  } else {
-    showResult(document.getElementById('adm-delvip-result'), `❌ ID ${tid} không có VIP!`, 'err');
-  }
-  renderAdminPage();
-}
-function adminCong() {
-  const tid = document.getElementById('adm-cong-id').value.trim();
-  const amount = parseInt(document.getElementById('adm-cong-amount').value) || 0;
-  if (!tid || !amount) { showToast('Nhập ID và số tiền!'); return; }
-  const db = loadDB();
-  db.balance[tid] = (db.balance[tid] || 0) + amount;
-  saveDB(db);
-  showResult(document.getElementById('adm-cong-result'), `✅ Cộng ${fmtMoney(amount)} cho ID: ${tid}`, 'ok');
-}
-
-function adminListKeys() {
-  const db = loadDB();
-  const pool = db.key_pool || {};
-  const res = document.getElementById('adm-keys-list');
-  if (!Object.keys(pool).length) { showResult(res,'📭 Chưa có key nào!','err'); return; }
-  const recent = Object.entries(pool).slice(-20);
-  const lines = recent.map(([k,info]) =>
-    `${info.used?'✅':'⬜'} ${k} [${info.free?'FREE':info.days+'d'}]`
-  ).join('\n');
-  showResult(res, `┌───⭓ KEY POOL\n${lines}\n└──────────────────`, 'ok');
-}
-
-function adminCleanup() {
-  const db = loadDB();
-  const now = Date.now() / 1000;
-  let rk = 0, rv = 0;
-  const pool = db.key_pool || {};
-  for (const k in pool) {
-    if (pool[k].used || (pool[k].free && now > (pool[k].expire_abs||0))) { delete pool[k]; rk++; }
-  }
-  const vk = db.vip_keys || {};
-  for (const uid in vk) {
-    if (vk[uid].expire !== -1 && vk[uid].expire < now) { delete vk[uid]; rv++; }
-  }
-  db.key_pool = pool; db.vip_keys = vk;
-  saveDB(db);
-  showToast(`✅ Xóa ${rk} key + ${rv} VIP hết hạn`);
-  renderAdminPage();
-}
-
-// Admin shop
-function adminSetShop() {
-  const id = document.getElementById('adm-shop-id').value.trim();
-  const days = parseInt(document.getElementById('adm-shop-days').value)||0;
-  const price = parseInt(document.getElementById('adm-shop-price').value)||0;
-  const label = document.getElementById('adm-shop-label').value.trim();
-  const desc = document.getElementById('adm-shop-desc').value.trim();
-  if (!id||!days||!price||!label) { showToast('Điền đủ thông tin!'); return; }
-  const db = loadDB();
-  db.shop[id] = {days,price,label,desc};
-  saveDB(db);
-  renderShopList();
-  showResult(document.getElementById('adm-shop-result'), `✅ Cập nhật gói [${id}]: ${label} — ${fmtMoney(price)} — ${days}d`, 'ok');
-}
-function adminDelShop() {
-  const id = document.getElementById('adm-shop-id').value.trim();
-  if (!id) { showToast('Nhập ID gói!'); return; }
-  const db = loadDB();
-  if (db.shop[id]) { delete db.shop[id]; saveDB(db); renderShopList(); showResult(document.getElementById('adm-shop-result'), `✅ Đã xóa gói [${id}]`, 'ok'); }
-  else showResult(document.getElementById('adm-shop-result'), `❌ Không tìm thấy gói [${id}]`, 'err');
-}
-
-// Admin events
-function switchAdminEventTab(tab) {
-  ['create','list','end'].forEach(t => {
-    document.getElementById('adm-event-'+t).style.display = t===tab?'block':'none';
-  });
-}
-function adminCreateEvent() {
-  const etype = document.getElementById('adm-ev-type').value;
-  const rtype = document.getElementById('adm-ev-rtype').value;
-  const rval = parseInt(document.getElementById('adm-ev-rval').value)||0;
-  const title = document.getElementById('adm-ev-title').value.trim();
-  const desc = document.getElementById('adm-ev-desc').value.trim();
-  const link = document.getElementById('adm-ev-link').value.trim();
-  if (!title) { showToast('Nhập tiêu đề!'); return; }
-  const eid = String(Date.now());
-  const db = loadDB();
-  db.events[eid] = {
-    title, desc, type:etype, link, reward_type:rtype, reward_value:rval,
-    active:true, created:new Date().toLocaleString('vi'), submissions:{}
-  };
-  saveDB(db); renderEventsPage();
-  showResult(document.getElementById('adm-ev-create-result'),
-    `✅ Đã tạo event!\n🆔 ID: ${eid}\n📋 ${title}\n🎁 ${rtype==='key'?rval+' ngày VIP':fmtMoney(rval)}`, 'ok');
-}
-function adminListEvents() {
-  const db = loadDB();
-  const events = db.events||{};
-  const res = document.getElementById('adm-ev-list-result');
-  if (!Object.keys(events).length) { showResult(res,'📭 Chưa có event!','err'); return; }
-  const lines = Object.entries(events).map(([eid,ev]) =>
-    `[${eid}] ${ev.title}\n  ${ev.active?'🟢 Mở':'🔴 Đóng'} — ${Object.keys(ev.submissions||{}).length} bài`
-  ).join('\n───\n');
-  showResult(res, `┌───⭓ DANH SÁCH EVENT\n${lines}\n└──────────────────`, 'ok');
-}
-function adminEndEvent() {
-  const eid = document.getElementById('adm-ev-end-id').value.trim();
-  if (!eid) { showToast('Nhập event ID!'); return; }
-  const db = loadDB();
-  if (!db.events[eid]) { showResult(document.getElementById('adm-ev-end-result'),'❌ Event không tồn tại!','err'); return; }
-  db.events[eid].active = false;
-  saveDB(db); renderEventsPage();
-  showResult(document.getElementById('adm-ev-end-result'), `✅ Đã kết thúc event ${eid}`, 'ok');
-}
-
-// Admin gift
-function switchAdminGiftTab(tab) {
-  ['create','list','delete'].forEach(t => {
-    document.getElementById('adm-gift-'+t).style.display = t===tab?'block':'none';
-  });
-}
-function adminCreateGift() {
-  const code = document.getElementById('adm-gc-code').value.trim().toUpperCase();
-  const rtype = document.getElementById('adm-gc-rtype').value;
-  const rval = parseInt(document.getElementById('adm-gc-rval').value)||0;
-  const maxUses = parseInt(document.getElementById('adm-gc-maxuses').value)||1;
-  if (!code||!rval) { showToast('Điền đủ thông tin!'); return; }
-  const db = loadDB();
-  db.giftcodes[code] = { reward_type:rtype, reward_value:rval, max_uses:maxUses, uses:0, used_by:[], created:new Date().toLocaleString('vi') };
-  saveDB(db);
-  showResult(document.getElementById('adm-gc-create-result'), `✅ Tạo giftcode: ${code}\n${rtype==='key'?rval+' ngày VIP':fmtMoney(rval)} — ${maxUses} lượt`, 'ok');
-}
-function adminListGifts() {
-  const db = loadDB();
-  const gc = db.giftcodes||{};
-  const res = document.getElementById('adm-gc-list-result');
-  if (!Object.keys(gc).length) { showResult(res,'📭 Chưa có giftcode!','err'); return; }
-  const lines = Object.entries(gc).map(([code,info]) =>
-    `🔑 ${code}\n  ${info.reward_type==='key'?info.reward_value+'d VIP':fmtMoney(info.reward_value)} — ${info.uses}/${info.max_uses} lượt`
-  ).join('\n───\n');
-  showResult(res, `┌───⭓ GIFTCODES\n${lines}\n└──────────────────`, 'ok');
-}
-function adminDelGift() {
-  const code = document.getElementById('adm-gc-del-code').value.trim().toUpperCase();
-  if (!code) { showToast('Nhập mã!'); return; }
-  const db = loadDB();
-  if (db.giftcodes[code]) { delete db.giftcodes[code]; saveDB(db); showResult(document.getElementById('adm-gc-del-result'), `✅ Đã xóa ${code}`, 'ok'); }
-  else showResult(document.getElementById('adm-gc-del-result'), `❌ Không tìm thấy ${code}`, 'err');
-}
-
-async function adminBroadcast() {
-  const msg = document.getElementById('adm-broadcast-msg').value.trim();
-  if (!msg) { showToast('Nhập nội dung!'); return; }
-  const btn = document.getElementById('adm-bc-btn');
-  btn.innerHTML = '<span class="loading-spin"></span> Đang gửi...';
-  const db = loadDB();
-  const users = Object.keys(db.users || {});
-  let ok = 0;
-  for (const uid of users) {
-    const r = await tgRequest('sendMessage', {
-      chat_id: uid,
-      text: `📢 THÔNG BÁO TỪ ADMIN\n──────────────────\n${msg}`,
-    });
-    if (r.ok) ok++;
-    await new Promise(res => setTimeout(res, 100));
-  }
-  showResult(document.getElementById('adm-bc-result'), `✅ Đã gửi tới ${ok}/${users.length} người.`, 'ok');
-  btn.textContent = '📢 Gửi ngay';
-}
-
-// Admin user tabs
-function switchAdminUserTab(tab) {
-  ['vip','ban','delvip','cong'].forEach(t => {
-    const el = document.getElementById('adm-user-'+t);
-    if (el) el.style.display = t===tab?'block':'none';
-  });
-}
-
-// ══════════════════════════════════════
-//   HELPERS
-// ══════════════════════════════════════
-function showResult(el, text, type) {
-  el.className = 'result-box visible ' + (type === 'ok' ? 'result-ok' : 'result-err');
-  el.textContent = text;
-  el.scrollTop = el.scrollHeight;
-}
-
-function showToast(msg) {
+function showToast(msg, duration = 2000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 
-function copyText(txt) {
-  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => showToast('✅ Đã copy!'));
-  else {
-    const ta = document.createElement('textarea');
-    ta.value = txt; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('✅ Đã copy!');
-  }
+function getKeyFree() {
+  const key = 'FREE-' + Math.random().toString(36).substr(2,10).toUpperCase();
+  document.getElementById('keyDisplay').textContent = key;
+  document.getElementById('keyResult').style.display = 'block';
+  showToast('✅ Đã tạo key free!');
+  tg.HapticFeedback?.impactOccurred('medium');
+
+  // Thực tế gọi API bot hoặc mở bot
+  openTelegram('getkey');
 }
+
+function copyKey() {
+  const key = document.getElementById('keyDisplay').textContent;
+  navigator.clipboard?.writeText(key).then(() => showToast('📋 Đã copy key!'));
+  tg.HapticFeedback?.impactOccurred('light');
+}
+
+function activateKey() {
+  const key = document.getElementById('keyInput').value.trim();
+  if (!key) { showToast('⚠️ Nhập key trước!'); return; }
+  openTelegram('activevip_' + key);
+  showToast('🔄 Đang mở bot...');
+}
+
+function useGiftcode() {
+  const code = document.getElementById('giftInput').value.trim().toUpperCase();
+  if (!code) { showToast('⚠️ Nhập giftcode!'); return; }
+  openTelegram('giftcode_' + code);
+  showToast('🔄 Đang xử lý...');
+}
+
+function buyVip(id, price, days) {
+  tg.showConfirm(
+    `Mua VIP ${days} ngày với giá ${price.toLocaleString()}đ?`,
+    (confirmed) => {
+      if (confirmed) {
+        openTelegram('buyvip_' + id);
+        showToast('🔄 Đang xử lý mua VIP...');
+      }
+    }
+  );
+}
+
+function checkFFInfo() {
+  const uid = document.getElementById('ffUid').value.trim();
+  if (!uid) { showToast('⚠️ Nhập UID!'); return; }
+  openTelegram('info_' + uid);
+  showToast('🔄 Mở bot để xem info...');
+}
+
+function checkMail() {
+  const token = document.getElementById('mailToken').value.trim();
+  if (!token) { showToast('⚠️ Nhập token!'); return; }
+  showToast('🔄 Mở bot để check mail...');
+  openTelegram('checkmail');
+}
+
+function startSpam() {
+  const token = document.getElementById('spamToken').value.trim();
+  if (!token) { showToast('⚠️ Nhập token trước!'); return; }
+  tg.showConfirm('Bắt đầu spam log với token này?', (ok) => {
+    if (ok) {
+      document.getElementById('spamBtn').style.display = 'none';
+      document.getElementById('stopBtn').style.display = 'flex';
+      showToast('🚀 Đang mở bot spam...');
+      openTelegram('spam');
+    }
+  });
+}
+
+function stopSpam() {
+  document.getElementById('spamBtn').style.display = 'flex';
+  document.getElementById('stopBtn').style.display = 'none';
+  openTelegram('stopspam');
+  showToast('🛑 Đã gửi lệnh dừng spam');
+}
+
+// ════════════════════════════════════════
+//         ADMIN FUNCTIONS
+// ════════════════════════════════════════
+function adminLogin() {
+  if (!isAdmin) {
+    tg.showAlert('⛔ Bạn không phải admin!');
+    return;
+  }
+  document.getElementById('adminLoginWrap').style.display  = 'none';
+  document.getElementById('adminContent').style.display = 'block';
+  loadAdminData();
+  showToast('✅ Đăng nhập admin thành công!');
+}
+
+function loadAdminData() {
+  // Mock data - thực tế gọi API
+  document.getElementById('aUsers').textContent = '—';
+  document.getElementById('aVip').textContent   = '—';
+  document.getElementById('aSpam').textContent  = '—';
+  document.getElementById('aKeys').textContent  = '—';
+  document.getElementById('aBan').textContent   = '—';
+  document.getElementById('aNap').textContent   = '—';
+}
+
+function adminToggle(feature, val) {
+  openTelegram(`admin_toggle_${feature}_${val ? 'on' : 'off'}`);
+  showToast(`${val ? '✅' : '🔴'} ${feature}: ${val ? 'BẬT' : 'TẮT'}`);
+}
+
+function adminCreateKey() {
+  const days = document.getElementById('adminKeyDays').value;
+  if (!days || days < 1) { showToast('⚠️ Nhập số ngày!'); return; }
+  openTelegram('createkey_' + days);
+  showToast('🔑 Đang tạo key...');
+}
+
+function adminAddBalance() {
+  const uid    = document.getElementById('adminUserId').value.trim();
+  const amount = document.getElementById('adminAmount').value;
+  const note   = document.getElementById('adminContent').value.trim() || 'Admin cong tien';
+  if (!uid || !amount) { showToast('⚠️ Điền đầy đủ thông tin!'); return; }
+  tg.showConfirm(`Cộng ${parseInt(amount).toLocaleString()}đ cho ID ${uid}?`, (ok) => {
+    if (ok) {
+      openTelegram(`cong_${amount}_${uid}_${note.replace(/ /g,'_')}`);
+      showToast('💰 Đang cộng tiền...');
+    }
+  });
+}
+
+function adminBroadcast() {
+  const msg = document.getElementById('broadcastMsg').value.trim();
+  if (!msg) { showToast('⚠️ Nhập nội dung!'); return; }
+  tg.showConfirm(`Gửi broadcast: "${msg.slice(0,50)}..."?`, (ok) => {
+    if (ok) {
+      openTelegram('broadcast_' + encodeURIComponent(msg));
+      showToast('📢 Đang gửi broadcast...');
+    }
+  });
+}
+
+function adminCreateGift() {
+  const code  = document.getElementById('gcCode').value.trim().toUpperCase();
+  const type  = document.getElementById('gcType').value;
+  const value = document.getElementById('gcValue').value;
+  const uses  = document.getElementById('gcUses').value || '100';
+  if (!code || !value) { showToast('⚠️ Điền đủ thông tin!'); return; }
+  openTelegram(`creategift_${code}_${type}_${value}_${uses}`);
+  showToast('🎁 Đang tạo giftcode...');
+}
+
+function adminBan(isBan) {
+  const id = document.getElementById('banId').value.trim();
+  if (!id) { showToast('⚠️ Nhập ID!'); return; }
+  tg.showConfirm(`${isBan ? 'Ban' : 'Unban'} ID ${id}?`, (ok) => {
+    if (ok) {
+      openTelegram(`${isBan ? 'ban' : 'unban'}_${id}`);
+      showToast(`${isBan ? '🚫 Đã ban' : '✅ Đã unban'} ID ${id}`);
+    }
+  });
+}
+
+// ════════════════════════════════════════
+//         START
+// ════════════════════════════════════════
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
