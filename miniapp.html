@@ -1,118 +1,60 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Fire API Manager</title>
+    <title>FF Tool</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: sans-serif;
-            background-color: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
-            padding: 20px;
-            text-align: center;
-        }
-        .container { max-width: 400px; margin: 0 auto; }
-        input {
-            width: 100%; padding: 12px; margin: 10px 0;
-            border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
-        }
-        button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px;
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #fff);
-            font-weight: bold; cursor: pointer; margin-top: 10px;
-        }
-        .status-card {
-            margin-top: 20px; padding: 15px; border-radius: 12px;
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            display: none; text-align: left;
-        }
-        .error { color: #e74c3c; font-size: 14px; }
-        .success { color: #2ecc71; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
+        input { width: 90%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 10px; }
+        button { width: 90%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-start { background: #2ecc71; color: white; }
+        .btn-stop { background: #e74c3c; color: white; margin-top: 10px; }
+        .card { background: #2c3e50; padding: 15px; border-radius: 12px; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>FF Manager 🚀</h2>
-        <p>Xin chào, <span id="user-name">Người dùng</span></p>
-        
-        <input type="text" id="tokenInput" placeholder="Nhập Token Free Fire...">
-        <button id="btnStart" onclick="startSpam()">BẮT ĐẦU (START)</button>
-        
-        <div id="statusCard" class="status-card">
-            <p><b>Trạng thái:</b> <span id="statusText" class="success">Đang chạy...</span></p>
-            <p><b>Nickname:</b> <span id="nickText">-</span></p>
-            <p><b>Session ID:</b> <span id="sessionText">-</span></p>
-            <button style="background-color: #e74c3c;" onclick="stopSpam()">DỪNG LẠI (STOP)</button>
-        </div>
+    <h3>FREE FIRE MANAGER</h3>
+    <input type="text" id="token" placeholder="Dán Token vào đây...">
+    <button class="btn-start" onclick="handleStart()">BẮT ĐẦU CHẠY</button>
 
-        <p id="msg" class="error"></p>
+    <div id="resultCard" class="card">
+        <p>Đang chạy: <span id="nickName"></span></p>
+        <p>ID: <span id="sessId"></span></p>
+        <button class="btn-stop" onclick="handleStop()">DỪNG LẠI</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Mở rộng hết màn hình
+        tg.expand();
 
-        // Địa chỉ Server Flask của bạn (Thay đổi link này!)
-        const API_URL = "http://127.0.0.1:5005"; 
-        const API_KEY = "liggdzut123";
+        // THAY IP VPS CỦA BẠN VÀO ĐÂY
+        const SERVER_IP = "http://127.0.0.1:5005"; 
+        let currentSess = "";
 
-        let currentSession = null;
-
-        // Hiển thị tên người dùng từ Telegram
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
+        async function handleStart() {
+            const token = document.getElementById('token').value;
+            const res = await fetch(`${SERVER_IP}/start?token=${token}&key=liggdzut123`, {
+                headers: { 'X-TG-Data': tg.initData }
+            });
+            const data = await res.json();
+            if(data.status === "success") {
+                currentSess = data.session_id;
+                document.getElementById('resultCard').style.display = 'block';
+                document.getElementById('nickName').innerText = data.nickname;
+                document.getElementById('sessId').innerText = data.session_id;
+            } else { alert("Lỗi: " + data.message); }
         }
 
-        async function startSpam() {
-            const token = document.getElementById('tokenInput').value;
-            const msg = document.getElementById('msg');
-            if (!token) { msg.innerText = "Vui lòng nhập token!"; return; }
-
-            msg.innerText = "Đang kết nối...";
-            
-            try {
-                const response = await fetch(`${API_URL}/start?token=${token}&key=${API_KEY}`, {
-                    method: 'GET',
-                    headers: { 'X-TG-Data': tg.initData } // Gửi dữ liệu xác thực
-                });
-
-                const data = await response.json();
-
-                if (data.status === "success") {
-                    currentSession = data.session_id;
-                    document.getElementById('statusCard').style.display = 'block';
-                    document.getElementById('nickText').innerText = data.nickname;
-                    document.getElementById('sessionText').innerText = data.session_id;
-                    msg.innerText = "";
-                    tg.MainButton.setText("ĐANG CHẠY").show();
-                } else {
-                    msg.innerText = "Lỗi: " + data.message;
-                }
-            } catch (e) {
-                msg.innerText = "Không thể kết nối đến Server!";
-            }
-        }
-
-        async function stopSpam() {
-            if (!currentSession) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/stop?session_id=${currentSession}`, {
-                    method: 'GET',
-                    headers: { 'X-TG-Data': tg.initData }
-                });
-                const data = await response.json();
-                if (data.status === "success") {
-                    document.getElementById('statusCard').style.display = 'none';
-                    currentSession = null;
-                    tg.MainButton.hide();
-                    alert("Đã dừng thành công!");
-                }
-            } catch (e) {
-                alert("Lỗi khi dừng!");
+        async function handleStop() {
+            const res = await fetch(`${SERVER_IP}/stop?session_id=${currentSess}`, {
+                headers: { 'X-TG-Data': tg.initData }
+            });
+            const data = await res.json();
+            if(data.status === "success") {
+                document.getElementById('resultCard').style.display = 'none';
+                alert("Đã dừng!");
             }
         }
     </script>
