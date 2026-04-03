@@ -1,62 +1,223 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Free Fire API Manager</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
-        input { width: 90%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 10px; }
-        button { width: 90%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
-        .btn-start { background: #2ecc71; color: white; }
-        .btn-stop { background: #e74c3c; color: white; margin-top: 10px; }
-        .card { background: #2c3e50; padding: 15px; border-radius: 12px; margin-top: 20px; display: none; }
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #1a1a1a);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #aaaaaa);
+            --button-color: var(--tg-theme-button-color, #2481cc);
+            --button-text: var(--tg-theme-button-text-color, #ffffff);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #2c2c2c);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 100%; max-width: 400px; }
+
+        h2 { margin-bottom: 5px; color: var(--button-color); }
+        p.subtitle { color: var(--hint-color); font-size: 14px; margin-bottom: 25px; }
+
+        .input-group {
+            background: var(--secondary-bg);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        label { display: block; text-align: left; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-start { background-color: var(--button-color); color: var(--button-text); }
+        .btn-stop { background-color: #e74c3c; color: white; margin-top: 15px; }
+        button:active { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .status-card {
+            display: none;
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+            border-left: 5px solid #2ecc71;
+        }
+
+        .status-item { margin-bottom: 10px; font-size: 15px; }
+        .status-item b { color: var(--button-color); }
+
+        #error-msg { color: #e74c3c; font-size: 13px; margin-top: 10px; min-height: 20px; }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <h3>FREE FIRE MANAGER</h3>
-    <input type="text" id="token" placeholder="Dán Token vào đây...">
-    <button class="btn-start" onclick="handleStart()">BẮT ĐẦU CHẠY</button>
 
-    <div id="resultCard" class="card">
-        <p>Đang chạy: <span id="nickName"></span></p>
-        <p>ID: <span id="sessId"></span></p>
-        <button class="btn-stop" onclick="handleStop()">DỪNG LẠI</button>
+    <div class="container">
+        <h2>FF Manager Pro 🚀</h2>
+        <p class="subtitle">Duy trì kết nối tài khoản Free Fire trên VPS</p>
+
+        <div class="input-group">
+            <label>Access Token</label>
+            <input type="text" id="tokenInput" placeholder="Nhập hoặc dán token FF...">
+            <div id="error-msg"></div>
+            <button id="startBtn" class="btn-start" onclick="startProcess()">
+                <span id="btnText">BẮT ĐẦU NGAY</span>
+                <div id="spinner" class="loading-spinner"></div>
+            </button>
+        </div>
+
+        <div id="statusCard" class="status-card">
+            <div style="font-weight: bold; font-size: 18px; margin-bottom: 15px;">⚡ Hệ thống đang chạy</div>
+            <div class="status-item"><b>Nickname:</b> <span id="resNick">-</span></div>
+            <div class="status-item"><b>UID:</b> <span id="resUid">-</span></div>
+            <div class="status-item"><b>Session:</b> <code id="resSess">-</code></div>
+            <div class="status-item"><b>Thời gian:</b> <span id="resTime">-</span></div>
+            
+            <button class="btn-stop" onclick="stopProcess()">DỪNG KẾT NỐI</button>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        tg.expand(); // Mở rộng ứng dụng
+        tg.ready();
 
-        // THAY IP VPS CỦA BẠN VÀO ĐÂY
-        const SERVER_IP = "http://127.0.0.1:5005"; 
-        let currentSess = "";
+        // --- CẤU HÌNH ---
+        const API_URL = "http://127.0.0.1:5005"; // Thay bằng IP VPS
+        const API_KEY = "liggdzut123";
 
-        async function handleStart() {
-            const token = document.getElementById('token').value;
-            const res = await fetch(`${SERVER_IP}/start?token=${token}&key=liggdzut123`, {
-                headers: { 'X-TG-Data': tg.initData }
-            });
-            const data = await res.json();
-            if(data.status === "success") {
-                currentSess = data.session_id;
-                document.getElementById('resultCard').style.display = 'block';
-                document.getElementById('nickName').innerText = data.nickname;
-                document.getElementById('sessId').innerText = data.session_id;
-            } else { alert("Lỗi: " + data.message); }
+        let currentSession = null;
+
+        async function startProcess() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const startBtn = document.getElementById('startBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+            const errorMsg = document.getElementById('error-msg');
+
+            if (!token) {
+                errorMsg.innerText = "⚠️ Vui lòng nhập Token!";
+                return;
+            }
+
+            // UI Loading
+            errorMsg.innerText = "";
+            startBtn.disabled = true;
+            btnText.style.display = "none";
+            spinner.style.display = "block";
+
+            try {
+                const response = await fetch(`${API_URL}/start?token=${token}&key=${API_KEY}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-TG-Data': tg.initData // Gửi dữ liệu Telegram để VPS xác thực
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    currentSession = data.session_id;
+                    
+                    // Hiển thị Card kết quả
+                    document.getElementById('statusCard').style.display = 'block';
+                    document.getElementById('resNick').innerText = data.nickname;
+                    document.getElementById('resUid').innerText = data.uid;
+                    document.getElementById('resSess').innerText = data.session_id;
+                    document.getElementById('resTime').innerText = new Date().toLocaleTimeString();
+                    
+                    // Ẩn form nhập
+                    document.querySelector('.input-group').style.display = 'none';
+                    
+                    tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    errorMsg.innerText = "❌ Lỗi: " + (data.message || "Không xác định");
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
+            } catch (err) {
+                errorMsg.innerText = "❌ Không thể kết nối tới VPS!";
+                console.error(err);
+            } finally {
+                startBtn.disabled = false;
+                btnText.style.display = "block";
+                spinner.style.display = "none";
+            }
         }
 
-        async function handleStop() {
-            const res = await fetch(`${SERVER_IP}/stop?session_id=${currentSess}`, {
-                headers: { 'X-TG-Data': tg.initData }
+        async function stopProcess() {
+            if (!currentSession) return;
+
+            tg.showConfirm("Bạn có chắc chắn muốn dừng không?", async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        const response = await fetch(`${API_URL}/stop?session_id=${currentSession}`, {
+                            method: 'GET',
+                            headers: { 'X-TG-Data': tg.initData }
+                        });
+                        
+                        const data = await response.json();
+                        if (data.status === "success") {
+                            // Reset giao diện
+                            document.getElementById('statusCard').style.display = 'none';
+                            document.querySelector('.input-group').style.display = 'block';
+                            document.getElementById('tokenInput').value = "";
+                            currentSession = null;
+                            tg.HapticFeedback.impactOccurred('medium');
+                            alert("Đã dừng phiên làm việc!");
+                        }
+                    } catch (err) {
+                        alert("Lỗi khi kết nối server!");
+                    }
+                }
             });
-            const data = await res.json();
-            if(data.status === "success") {
-                document.getElementById('resultCard').style.display = 'none';
-                alert("Đã dừng!");
-            }
         }
     </script>
 </body>
-</html>
+    </html>
+    
