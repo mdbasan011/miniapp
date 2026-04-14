@@ -2,112 +2,232 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Fire Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Free Fire Manager Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         :root {
-            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-bg-color: #1c1c1d;
             --tg-theme-button-color: #248bfe;
-            --tg-theme-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #2c2c2e;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0; overflow: hidden;
+            background: var(--tg-theme-bg-color);
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: none; /* Ẩn mặc định để check auth */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px; width: 85%;
-            text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 25px;
+            border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
         }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .user-info img {
+            width: 30px;
+            border-radius: 50%;
+        }
+
+        .status-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
         .status-dot {
-            width: 12px; height: 12px; border-radius: 50%;
-            display: inline-block; margin-right: 8px;
-            background: #ff4d4d; /* Mặc định đỏ */
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            background: #ff4d4d;
         }
-        .status-online { background: #00ff7f; box-shadow: 0 0 10px #00ff7f; }
-        
+
+        .status-online {
+            background: #00ff7f;
+            box-shadow: 0 0 12px #00ff7f;
+        }
+
         input {
-            width: 100%; padding: 12px; margin: 15px 0;
-            border-radius: 10px; border: none;
-            background: rgba(255, 255, 255, 0.1); color: white;
-            box-sizing: border-box; outline: none;
+            width: 100%;
+            padding: 14px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #1c1c1d;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: 0.3s;
         }
+
+        input:focus {
+            border-color: var(--tg-theme-button-color);
+            outline: none;
+        }
+
         button {
-            width: 100%; padding: 15px; border-radius: 12px;
-            border: none; font-weight: bold; cursor: pointer;
-            transition: 0.3s; margin-top: 10px;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
         }
-        .btn-start { background-color: #248bfe; color: white; }
-        .btn-stop { background-color: #ff4d4d; color: white; display: none; }
-        .info { font-size: 0.9em; margin-top: 15px; color: #aaa; text-align: left; }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-start { background: var(--tg-theme-button-color); color: white; }
+        .btn-stop { background: #eb4034; color: white; display: none; }
+
+        #access-denied {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2 style="margin-bottom: 5px;">FF MANAGER</h2>
-        <div id="status-text"><span class="status-dot" id="dot"></span>Offline</div>
-        
-        <input type="text" id="token" placeholder="Nhập Token Access...">
-        
-        <button id="startBtn" class="btn-start" onclick="handleStart()">BẮT ĐẦU</button>
-        <button id="stopBtn" class="btn-stop" onclick="handleStop()">DỪNG LẠI</button>
 
-        <div id="accountInfo" class="info" style="display:none">
-            <hr style="border: 0.5px solid #333">
-            <p>👤 Nickname: <span id="nick">...</span></p>
-            <p>🆔 UID: <span id="uid">...</span></p>
-            <p>🌍 Region: <span id="reg">...</span></p>
+<div id="access-denied">
+    <i class="fas fa-user-shield" style="font-size: 50px; color: #ff4d4d;"></i>
+    <h2>Truy cập bị từ chối</h2>
+    <p>Vui lòng mở ứng dụng này từ Telegram Bot chính thức.</p>
+</div>
+
+<div class="container" id="main-app">
+    <div class="user-info" id="user-box">
+        </div>
+
+    <h2 style="margin-top: 0;">FF MANAGER <span style="font-size: 0.5em; vertical-align: middle; opacity: 0.5;">v2.0</span></h2>
+
+    <div class="status-card">
+        <div id="status-text">
+            <span class="status-dot" id="dot"></span> 
+            <span id="text-val">Hệ thống đang dừng</span>
         </div>
     </div>
 
-    <script>
-        const API_BASE = "http://192.168.1.2:20115"; // Thay IP của bạn vào đây
-        const KEY = "liggdzut123";
-        let currentSession = null;
+    <input type="text" id="token" placeholder="Dán Access Token vào đây...">
 
-        async function handleStart() {
-            const token = document.getElementById('token').value;
-            if(!token) return alert("Vui lòng nhập token!");
+    <button id="startBtn" class="btn-start" onclick="handleStart()">
+        <i class="fas fa-play"></i> BẮT ĐẦU NGAY
+    </button>
+    <button id="stopBtn" class="btn-stop" onclick="handleStop()">
+        <i class="fas fa-stop"></i> DỪNG HOẠT ĐỘNG
+    </button>
+</div>
 
-            try {
-                const res = await axios.get(`${API_BASE}/start?key=${KEY}&token=${token}`);
-                if(res.data.status === "success") {
-                    currentSession = res.data.session_id;
-                    updateUI(true, res.data.account_detail);
-                }
-            } catch (e) { alert("Lỗi: " + e.response.data.message); }
-        }
+<script>
+    const tg = window.Telegram.WebApp;
+    const API_BASE = "http://192.168.1.2:20115"; // Thay IP VPS của bạn vào đây
+    const KEY = "liggdzut123";
+    let currentSession = null;
 
-        async function handleStop() {
-            try {
-                await axios.get(`${API_BASE}/stop?key=${KEY}&session_id=${currentSession}`);
-                updateUI(false);
-            } catch (e) { alert("Không thể dừng!"); }
-        }
-
-        function updateUI(running, data = null) {
-            document.getElementById('startBtn').style.display = running ? 'none' : 'block';
-            document.getElementById('stopBtn').style.display = running ? 'block' : 'none';
-            document.getElementById('dot').className = running ? 'status-dot status-online' : 'status-dot';
-            document.getElementById('status-text').innerText = running ? ' Đang chạy' : ' Offline';
+    // 1. Kiểm tra quyền truy cập (Chỉ cho phép trong Telegram)
+    function checkAuth() {
+        if (tg.initData === "" && !window.location.hostname.includes("localhost")) {
+            document.body.style.display = "flex";
+            document.getElementById('main-app').style.display = "none";
+            document.getElementById('access-denied').style.display = "block";
+        } else {
+            document.body.style.display = "flex";
+            tg.expand(); // Mở rộng hết cỡ màn hình
+            tg.ready();
             
-            if(data) {
-                document.getElementById('accountInfo').style.display = 'block';
-                document.getElementById('nick').innerText = data.nickname;
-                document.getElementById('uid').innerText = data.uid;
-                document.getElementById('reg').innerText = data.region;
-            } else {
-                document.getElementById('accountInfo').style.display = 'none';
+            // Hiển thị tên user nếu có
+            if (tg.initDataUnsafe?.user) {
+                const user = tg.initDataUnsafe.user;
+                document.getElementById('user-box').innerHTML = `
+                    <span>Chào, <b>${user.first_name}</b></span>
+                `;
             }
         }
-    </script>
+    }
+
+    async function handleStart() {
+        const token = document.getElementById('token').value;
+        if (!token) {
+            tg.HapticFeedback.notificationOccurred('error');
+            return tg.showAlert("Vui lòng nhập mã token!");
+        }
+
+        tg.MainButton.showProgress();
+        
+        try {
+            const res = await axios.get(`${API_BASE}/start?key=${KEY}&token=${token}`);
+
+            if (res.data.status === "success") {
+                currentSession = res.data.session_id;
+                updateUI(true);
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        } catch (e) {
+            tg.showAlert("Lỗi kết nối Server!");
+        } finally {
+            tg.MainButton.hideProgress();
+        }
+    }
+
+    async function handleStop() {
+        try {
+            await axios.get(`${API_BASE}/stop?key=${KEY}&session_id=${currentSession}`);
+            updateUI(false);
+            tg.HapticFeedback.impactOccurred('medium');
+        } catch {
+            tg.showAlert("Không thể dừng session!");
+        }
+    }
+
+    function updateUI(running) {
+        document.getElementById('startBtn').style.display = running ? 'none' : 'block';
+        document.getElementById('stopBtn').style.display = running ? 'block' : 'none';
+        
+        const dot = document.getElementById('dot');
+        const textVal = document.getElementById('text-val');
+
+        if (running) {
+            dot.classList.add('status-online');
+            textVal.innerText = "Đang chạy ngầm...";
+            textVal.style.color = "#00ff7f";
+        } else {
+            dot.classList.remove('status-online');
+            textVal.innerText = "Hệ thống đang dừng";
+            textVal.style.color = "white";
+        }
+    }
+
+    // Chạy kiểm tra khi load trang
+    checkAuth();
+</script>
+
 </body>
 </html>
